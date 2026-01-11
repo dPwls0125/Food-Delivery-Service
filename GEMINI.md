@@ -2,13 +2,13 @@
 앞으로 모든 답변을 한국어로 대답합니다. 
 
 
-## 통합테스트 구현 사항
+## API SPEC 테스트 구현 사항 
 
 아래 API문서에 따라, 가짜 응답을 제공하는 Controller를 작성하고, 작성된 내용을 만족하는지 테스트하는 통합 테스트를 구현한다.
 
 
 ### API 문서
-# 배달의 민족 서비스
+# Food-Delivery-Serivce API 명세
 --- 
 1. **회원 가입**
    post  ```/auth/sign```
@@ -19,10 +19,10 @@
      "password": "Password123!",
      "name": "김예진",
      "signupType": "USER"
-      }
+     }
    ```
    **Response Body**
-    - **201 Created**
+   - **201 Created**
    ```json
    {
      "id": 1,
@@ -49,7 +49,7 @@
      "name": "김예진"
    }   
    ```
-3. **주문 생성**
+3. **주문 생성** **API**
    ```json
    [USER]
      주문 생성
@@ -64,7 +64,7 @@
      라이더 매칭
    ```
 
-   POST ```/api/order```
+   POST ```/orders```
    **Request Body**
    ```json
    {
@@ -95,30 +95,38 @@
 4. **할인 적용 결과 반환 API**
    POST ```/api/order/{orderId}/discounts/preview```
 
-   **Request Body**
-   ```json
-   {
-      "couponId": 10,
-      "useBaeminClub": true
-   }   
-   ```
+- 배민 클럽 할인
+- 쿠폰은 최소 금액 15,000원 이상일 때만 사용 가능.
+- 최대 할인 금액은 5,000원이다.
+- 어떤 쿠폰은 배달료를 포함한 전체 금액에 적용, 어떤 쿠폰은 음식 가격에만 적용
+- 특정 가게에서만 사용할 수 있는 쿠폰
+- 쿠폰 우선순위 결정 알고리즘. 어떤 쿠폰을 선택했을 떄 최종 금액이 최소인가? (쿠폰은 1개만 적용 가능하다.)
 
-   **ResponseBody**
-   ```json
-   {
-     "orderId": 5001,
-     "originalPrice": 18000,
-     "discountDetails": {
-       "couponDiscount": 3000,
-       "baeminClubDiscount": 1500
-     },
-     "totalDiscountAmount": 4500,
-     "finalPrice": 13500
-   }   
-   ```
+
+**Request Body**
+  ```json
+  {
+     "couponId": 10,
+     "useBaeminClub": true
+  }   
+  ```
+
+**ResponseBody**
+  ```json
+  {
+    "orderId": 5001,
+    "originalPrice": 18000,
+    "discountDetails": {
+      "couponDiscount": 3000,
+      "baeminClubDiscount": 1500
+    },
+    "totalDiscountAmount": 4500,
+    "finalPrice": 13500
+  }   
+  ```
 
 5. **주문 결제**
-   POST ```/api/order/{orderId}/payment```
+   POST ```/payment/{orderId}/
    **Request Body**
    ```json
    {
@@ -142,8 +150,8 @@
    }
    ```
 
-6. **Owner - 라이더 매칭 요청**
-   **post**  ```/api/order/{orderId}/dispatch```
+6. **Owner - 라이더 매칭 요청** (O)
+   **post**  ```/deliveries/{orderId}/dispatch```
    한집 배달 / 알뜰 배달  선택 가능
 
    **Request Body**
@@ -163,15 +171,28 @@
    ```
 
 7. **라이더의 배달 상태 변경**
-   POST ```/api/orders/{orderId}/delivery-status```
-   Request Body
+   POST ```/deliveries/{deliveryId}/status```
+   **Request Body**
 ```json
 {
   "status": "PICKED_UP"
 }
 ```
+
+Status : 200 OK
+Response Body
+```json
+{
+	"deliveryId" : 1,
+	"deliveryStatus" : "PICKED_UP"
+}
+```
+
 8. **라이더의 현재 배달 Route 조회 API**
-   GET ```/api/riders/me/current-route```
+   GET ```/routes/me/current-route```
+
+**Status :** 200 ok
+Response Body
 ```json
 {
   "stops": [
@@ -203,8 +224,10 @@
 }
 
 ```
-9. 라이더의 주문 단위 상세 조회 API
-   GET ```/api/orders/{orderId}```
+
+9. **라이더/주문자/owner 의 주문 단위 상세 조회 API**
+   **Role-based View Model**
+   GET ```/orders/{orderId}```
 ```json
 {
   "orderId": 5001,
@@ -245,7 +268,7 @@ GET /orders/{orderId}/rider-location
 
 ```
 
-POST ```/api/routes/{routeId}/location```
+POST ```/riders/{routeId}/location```
 **Request Body**
 ```json
 {
@@ -255,15 +278,34 @@ POST ```/api/routes/{routeId}/location```
 ```
 
 12. **사용자의 라이더 위치 조회 API**
-    GET ```/api/orders/{orderId}/rider-location```
+    GET ```/riders/{riderId}/location```
     **Response Body**
 ```json
 {
-  "orderId": 5001,
+  "riderId": 5001,
   "latitude": 37.498095,
   "longitude": 127.027610,
   "lastUpdatedAt": "2026-01-05T16:15:00"
 }
 ```
 
+8. **라이더 위치 업데이트 API**
+   POST ```/riders/{riderId}/location```
+   **RequestBody**
+```
+{
+  "latitude": 37.498095,
+  "longitude": 127.027610
+}
+```
 
+**Response**
+**201 created**
+```json
+{
+  "riderId": 5001,
+  "latitude": 37.498095,
+  "longitude": 127.027610,
+  "lastUpdatedAt": "2026-01-05T16:15:00"
+}
+```
