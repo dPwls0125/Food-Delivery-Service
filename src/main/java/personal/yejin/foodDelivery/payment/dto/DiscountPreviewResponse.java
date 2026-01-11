@@ -1,4 +1,4 @@
-package personal.yejin.foodDelivery.order.dto;
+package personal.yejin.foodDelivery.payment.dto;
 
 public record DiscountPreviewResponse(
         long orderId,
@@ -6,10 +6,4 @@ public record DiscountPreviewResponse(
         DiscountDetails discountDetails,
         int totalDiscountAmount,
         int finalPrice
-) {
-
-    public record DiscountDetails(
-            int couponDiscount,
-            int baeminClubDiscount
-    ) {}
-}
+){}

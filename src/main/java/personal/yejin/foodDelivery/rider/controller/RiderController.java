@@ -9,7 +9,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/api/riders")
+@RequestMapping("/riders")
 public class RiderController {
     @GetMapping("/{riderId}/location")
     public ResponseEntity<RiderLocationResponse> getRiderLocation(@PathVariable Long riderId) {

@@ -1,8 +1,6 @@
 package personal.yejin.foodDelivery.delivery.dto;
 
+import personal.yejin.foodDelivery.delivery.model.DeliveryStatus;
+
 public record DeliveryStatusUpdateRequest(DeliveryStatus status) {
-    public enum DeliveryStatus {
-        PICKED_UP,
-        DELIVERED_TO_CUSTOMER
-    }
 }

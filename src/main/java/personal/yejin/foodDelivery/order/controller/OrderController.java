@@ -7,11 +7,10 @@ import personal.yejin.foodDelivery.order.model.OrderStatus;
 import personal.yejin.foodDelivery.rider.dto.RiderOrderDetailResponse;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/orders")
 public class OrderController {
     @PostMapping
     public ResponseEntity<OrderCreateResponse> createOrder(
@@ -28,44 +27,11 @@ public class OrderController {
                 .body(response);
     }
 
-    @PostMapping("/{orderId}/discounts/preview")
-    public ResponseEntity<DiscountPreviewResponse> previewDiscounts(
-        @PathVariable Long orderId,
-        @RequestBody DiscountPreviewRequest request
-    ) {
-        DiscountPreviewResponse.DiscountDetails discountDetails = new DiscountPreviewResponse.DiscountDetails(3000, 1500);
-        DiscountPreviewResponse fakeResponse = new DiscountPreviewResponse(
-            orderId,
-            18000,
-            discountDetails,
-            4500,
-            13500
-        );
-        return ResponseEntity.ok(fakeResponse);
-    }
-
-    @PostMapping("/{orderId}/payment")
-    public ResponseEntity<OrderPaymentResponse> processPayment(
-        @PathVariable Long orderId,
-        @RequestBody OrderPaymentRequest request
-    ) {
-        OrderPaymentResponse fakeResponse = new OrderPaymentResponse(
-            orderId,
-            OrderStatus.PAID,
-            OrderPaymentResponse.PaymentStatus.SUCCESS,
-            18000,
-            4500,
-            13500,
-            request.paymentMethod(),
-            LocalDateTime.parse("2026-01-05T15:10:00")
-        );
-        return ResponseEntity.ok(fakeResponse);
-    }
 
 
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<RiderOrderDetailResponse> getOrder(@PathVariable Long orderId){
+    public ResponseEntity<?> getOrder(@PathVariable Long orderId){ // TODO : role에 따라서 응답 DTO 분기하기
         var storeInfo = RiderOrderDetailResponse.StoreInfo.builder()
             .name("김밥천국")
             .address("서울시 강남구 ...")
@@ -80,7 +46,7 @@ public class OrderController {
             .orderId(orderId)
             .store(storeInfo)
             .deliveryAddress("서울시 강남구 테헤란로 123")
-            .orderStatus(OrderStatus.PAID) // Spec says PICKED_UP, but PAID is also a valid status from the enum. Using this for variety.
+            .orderStatus(OrderStatus.PAID)
             .items(itemsInfo)
             .customerNote("문 앞에 놔주세요")
             .build();

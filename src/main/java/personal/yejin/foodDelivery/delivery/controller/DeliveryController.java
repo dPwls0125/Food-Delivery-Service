@@ -9,6 +9,8 @@ import personal.yejin.foodDelivery.delivery.dto.DeliveryStatusUpdateRequest;
 import personal.yejin.foodDelivery.delivery.dto.DeliveryStatusUpdateResponse;
 import personal.yejin.foodDelivery.delivery.dto.DispatchRequest;
 import personal.yejin.foodDelivery.delivery.dto.DispatchResponse;
+import personal.yejin.foodDelivery.delivery.model.DispatchStatus;
+
 @RequestMapping("/deliveries")
 public class DeliveryController {
     @PostMapping("/{orderId}/dispatch")
@@ -18,13 +20,13 @@ public class DeliveryController {
     ) {
         DispatchResponse fakeResponse = new DispatchResponse(
                 orderId,
-                DispatchResponse.DispatchStatus.REQUESTED,
+                DispatchStatus.REQUESTED,
                 request.deliveryType()
         );
         return ResponseEntity.ok(fakeResponse);
     }
 
-    @PostMapping("/{deliveryId}/delivery-status")
+    @PostMapping("/{deliveryId}/status")
     public ResponseEntity<DeliveryStatusUpdateResponse> updateDeliveryStatus(
             @PathVariable Long deliveryId,
             @RequestBody DeliveryStatusUpdateRequest request

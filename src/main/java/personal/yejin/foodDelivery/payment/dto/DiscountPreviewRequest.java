@@ -1,4 +1,4 @@
-package personal.yejin.foodDelivery.order.dto;
+package personal.yejin.foodDelivery.payment.dto;
 
 public record DiscountPreviewRequest(
         long couponId,
