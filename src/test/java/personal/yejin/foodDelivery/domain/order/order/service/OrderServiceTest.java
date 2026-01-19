@@ -1,4 +1,4 @@
-package personal.yejin.foodDelivery.domain.order.service;
+package personal.yejin.foodDelivery.domain.order.order.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,6 +16,7 @@ import personal.yejin.foodDelivery.domain.order.model.OrderItem;
 import personal.yejin.foodDelivery.domain.order.model.OrderStatus;
 import personal.yejin.foodDelivery.domain.order.repository.InMemoryOrderRepository;
 import personal.yejin.foodDelivery.domain.order.repository.OrderRepository;
+import personal.yejin.foodDelivery.domain.order.service.OrderService;
 
 class OrderServiceTest {
 

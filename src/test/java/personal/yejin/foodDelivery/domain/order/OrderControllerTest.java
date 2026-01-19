@@ -1,4 +1,4 @@
-package personal.yejin.foodDelivery.order;
+package personal.yejin.foodDelivery.domain.order;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;

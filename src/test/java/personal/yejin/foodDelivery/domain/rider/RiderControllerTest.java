@@ -1,4 +1,4 @@
-package personal.yejin.foodDelivery.rider;
+package personal.yejin.foodDelivery.domain.rider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;

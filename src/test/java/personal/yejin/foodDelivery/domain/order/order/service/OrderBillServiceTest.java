@@ -1,4 +1,4 @@
-package personal.yejin.foodDelivery.domain.order.service;
+package personal.yejin.foodDelivery.domain.order.order.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,6 +9,7 @@ import personal.yejin.foodDelivery.domain.order.repository.AppliedDiscountReposi
 import personal.yejin.foodDelivery.domain.order.repository.InMemoryAppliedDiscountRepository;
 import personal.yejin.foodDelivery.domain.order.repository.InMemoryOrderBillRepository;
 import personal.yejin.foodDelivery.domain.order.repository.OrderBillRepository;
+import personal.yejin.foodDelivery.domain.order.service.OrderBillService;
 
 import java.util.Arrays;
 import java.util.List;
