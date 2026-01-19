@@ -1,21 +1,27 @@
 package personal.yejin.foodDelivery.domain.order.order.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
-import personal.yejin.foodDelivery.domain.order.model.*;
-import personal.yejin.foodDelivery.domain.order.repository.AppliedDiscountRepository;
-import personal.yejin.foodDelivery.domain.order.repository.InMemoryAppliedDiscountRepository;
-import personal.yejin.foodDelivery.domain.order.repository.InMemoryOrderBillRepository;
-import personal.yejin.foodDelivery.domain.order.repository.OrderBillRepository;
-import personal.yejin.foodDelivery.domain.order.service.OrderBillService;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
+import personal.yejin.foodDelivery.domain.order.model.AppliedDiscount;
+import personal.yejin.foodDelivery.domain.order.model.AppliedDiscountType;
+import personal.yejin.foodDelivery.domain.order.model.Order;
+import personal.yejin.foodDelivery.domain.order.model.OrderBill;
+import personal.yejin.foodDelivery.domain.order.model.OrderItem;
+import personal.yejin.foodDelivery.domain.order.model.OrderStatus;
+import personal.yejin.foodDelivery.domain.order.repository.AppliedDiscountRepository;
+import personal.yejin.foodDelivery.domain.order.repository.InMemoryAppliedDiscountRepository;
+import personal.yejin.foodDelivery.domain.order.repository.InMemoryOrderBillRepository;
+import personal.yejin.foodDelivery.domain.order.repository.OrderBillRepository;
+import personal.yejin.foodDelivery.domain.order.service.OrderBillService;
 
 class OrderBillServiceTest {
 
@@ -37,7 +43,6 @@ class OrderBillServiceTest {
                 new OrderItem(102L, "콜라", 1, 2000)      // 2000
         );
         sampleOrder = Order.builder()
-                .id(1L)
                 .storeId(100L)
                 .deliveryType(DeliveryType.BUNDLE) // BUNDLE fee is 3000
                 .orderItems(orderItems)

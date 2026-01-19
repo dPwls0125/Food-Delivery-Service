@@ -15,6 +15,9 @@ import personal.yejin.foodDelivery.domain.order.dto.OrderCreateRequest;
 import personal.yejin.foodDelivery.domain.order.dto.OrderCreateResponse;
 import personal.yejin.foodDelivery.domain.order.model.OrderStatus;
 import personal.yejin.foodDelivery.domain.rider.dto.RiderOrderDetailResponse;
+import personal.yejin.foodDelivery.domain.payment.dto.DiscountDetails;
+import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewRequest;
+import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewResponse;
 
 @RestController
 @RequestMapping("/orders")
@@ -60,6 +63,23 @@ public class OrderController {
 
         return ResponseEntity.ok(fakeResponse);
     }
+
+    @PostMapping("/{orderId}/discounts/preview")
+    public ResponseEntity<DiscountPreviewResponse> getDiscountPreview(
+            @PathVariable Long orderId,
+            @RequestBody DiscountPreviewRequest discountPreviewRequest) {
+        // Fake response based on API spec
+        DiscountDetails discountDetails = new DiscountDetails(3000, 1500);
+        DiscountPreviewResponse response = new DiscountPreviewResponse(
+                orderId,
+                18000,
+                discountDetails,
+                4500,
+                13500
+        );
+        return ResponseEntity.ok(response);
+    }
+
 
 
 }

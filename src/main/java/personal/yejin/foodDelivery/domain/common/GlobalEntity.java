@@ -5,11 +5,16 @@ import java.time.LocalDateTime;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter // For setId()
+@SuperBuilder
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // For SuperBuilder
 @MappedSuperclass
 public abstract class GlobalEntity {
 
