@@ -39,6 +39,9 @@ out/
 ### env ###
 .env
 
+### GEMINI.md ###
+GEMINI.md
 
 src/main/resources/*.yml
 !application.yml
+
