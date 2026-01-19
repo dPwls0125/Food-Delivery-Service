@@ -1,19 +1,20 @@
 package personal.yejin.foodDelivery.payment;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import personal.yejin.foodDelivery.order.dto.OrderPaymentRequest;
-import personal.yejin.foodDelivery.payment.controller.PaymentController;
-import personal.yejin.foodDelivery.payment.dto.DiscountPreviewRequest;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import personal.yejin.foodDelivery.domain.order.dto.OrderPaymentRequest;
+import personal.yejin.foodDelivery.domain.payment.controller.PaymentController;
+import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewRequest;
 
 @WebMvcTest(PaymentController.class)
 public class PaymentControllerTest {

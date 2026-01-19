@@ -1,22 +1,21 @@
 package personal.yejin.foodDelivery.order;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.Collections;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import personal.yejin.foodDelivery.order.controller.OrderController;
-import personal.yejin.foodDelivery.order.dto.OrderCreateRequest;
-import personal.yejin.foodDelivery.order.dto.OrderCreateRequest.OrderItemRequest;
 
-import java.util.Collections;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import personal.yejin.foodDelivery.domain.order.controller.OrderController;
+import personal.yejin.foodDelivery.domain.order.dto.OrderCreateRequest;
 
 @WebMvcTest(OrderController.class)
 public class OrderControllerTest {

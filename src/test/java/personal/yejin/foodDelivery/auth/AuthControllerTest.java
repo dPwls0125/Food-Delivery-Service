@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import personal.yejin.foodDelivery.auth.controller.AuthController;
-import personal.yejin.foodDelivery.auth.dto.LoginRequest;
-import personal.yejin.foodDelivery.auth.dto.SignUpRequest;
+import personal.yejin.foodDelivery.domain.auth.controller.AuthController;
+import personal.yejin.foodDelivery.domain.auth.dto.LoginRequest;
+import personal.yejin.foodDelivery.domain.auth.dto.SignUpRequest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

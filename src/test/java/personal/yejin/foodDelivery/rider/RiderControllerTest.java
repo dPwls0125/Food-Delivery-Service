@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import personal.yejin.foodDelivery.rider.controller.RiderController;
-import personal.yejin.foodDelivery.rider.dto.RiderLocationRequest;
+import personal.yejin.foodDelivery.domain.rider.controller.RiderController;
+import personal.yejin.foodDelivery.domain.rider.dto.RiderLocationRequest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

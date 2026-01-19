@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import personal.yejin.foodDelivery.delivery.controller.DeliveryController;
-import personal.yejin.foodDelivery.delivery.dto.DeliveryStatusUpdateRequest;
-import personal.yejin.foodDelivery.delivery.dto.DispatchRequest;
-import personal.yejin.foodDelivery.delivery.model.DeliveryStatus;
-import personal.yejin.foodDelivery.delivery.model.DeliveryType;
+import personal.yejin.foodDelivery.domain.delivery.controller.DeliveryController;
+import personal.yejin.foodDelivery.domain.delivery.dto.DeliveryStatusUpdateRequest;
+import personal.yejin.foodDelivery.domain.delivery.dto.DispatchRequest;
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
