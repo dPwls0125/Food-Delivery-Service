@@ -58,7 +58,10 @@ dependencies {
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
 	// 기본적인 테스트 환경 구성
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'\
+
+	// mockito
+	testImplementation 'org.mockito:mockito-core:5.5.0'
 }
 
 // JUnit 5 기반 테스트 실행 설정

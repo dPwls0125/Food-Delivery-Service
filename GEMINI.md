@@ -309,3 +309,4 @@ POST ```/riders/{routeId}/location```
   "lastUpdatedAt": "2026-01-05T16:15:00"
 }
 ```
+
