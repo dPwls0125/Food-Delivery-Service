@@ -1,12 +1,7 @@
 package personal.yejin.foodDelivery.domain.route.repository;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import personal.yejin.foodDelivery.domain.route.model.Route;
 
-import java.util.Optional;
-
-@Repository
-public interface RouteRepository {
-    Route save(Route route);
-    Optional<Route> findById(long id);
+public interface RouteRepository extends JpaRepository<Route, Long> {
 }

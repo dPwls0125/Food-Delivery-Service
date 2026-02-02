@@ -1,20 +1,41 @@
 package personal.yejin.foodDelivery.domain.delivery.model;
 
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import personal.yejin.foodDelivery.domain.common.GlobalEntity;
 import personal.yejin.foodDelivery.domain.order.model.Order;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.route.model.Route;
 
+@Entity
+@Table(name = "deliveries")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @SuperBuilder
 public class Delivery extends GlobalEntity {
 
-    private final Order order;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rider_id")
     private Rider rider;
+
+    @Enumerated(EnumType.STRING)
     private DeliveryStatus status;
-    private final DeliveryType deliveryType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_type")
+    private DeliveryType deliveryType;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "route_id")
     private Route route;
 
     public void dispatch(Route route) {
@@ -23,7 +44,6 @@ public class Delivery extends GlobalEntity {
         this.status = DeliveryStatus.DISPATCHED;
     }
 
-    // 테스트 및 필요에 따라 상태를 설정하기 위한 메서드 추가 (주로 테스트 용도)
     public void setStatus(DeliveryStatus status) {
         this.status = status;
     }

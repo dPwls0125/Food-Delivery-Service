@@ -1,28 +1,72 @@
 package personal.yejin.foodDelivery.domain.order.model;
 
-import java.util.List;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
-import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
 import personal.yejin.foodDelivery.domain.common.GlobalEntity;
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
 import personal.yejin.foodDelivery.domain.rider.model.Location;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode(callSuper = true)
+@Entity
+@Table(name = "orders")
 @SuperBuilder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode(of = "id", callSuper = false)
 public class Order extends GlobalEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, name = "store_id")
     private Long storeId;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "latitude", column = @Column(name = "pickup_latitude")),
+            @AttributeOverride(name = "longitude", column = @Column(name = "pickup_longitude"))
+    })
     private Location pickupLocation; // 픽업 위치
+
+    @Column(nullable = false)
     private String deliveryAddress;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "latitude", column = @Column(name = "delivery_latitude")),
+            @AttributeOverride(name = "longitude", column = @Column(name = "delivery_longitude"))
+    })
     private Location deliveryLocation; // 배달 위치
+
+    @Enumerated(EnumType.STRING)
     private DeliveryType deliveryType;
-    private List<OrderItem> orderItems;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private OrderBill orderBill;
+
+    @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
+
     private String customerNote; // 상세 조회 API에 포함된 고객 요청
+
+    public void addOrderItem(OrderItem orderItem) {
+        orderItems.add(orderItem);
+        orderItem.setOrder(this);
+    }
+
+    public void setOrderBill(OrderBill orderBill) {
+        this.orderBill = orderBill;
+        if (orderBill.getOrder() != this) {
+            orderBill.setOrder(this);
+        }
+    }
 }

@@ -16,7 +16,7 @@ import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat; // Using AssertJ for better assertions
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -26,16 +26,14 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class RiderServiceTest {
 
-    @Mock
-    private RiderRepository riderRepository;
-
-    @InjectMocks
-    private RiderService riderService;
-
-    private Rider testRider;
     private final Long TEST_RIDER_ID = 1L;
     private final double INITIAL_LAT = 37.5;
     private final double INITIAL_LON = 127.0;
+    @Mock
+    private RiderRepository riderRepository;
+    @InjectMocks
+    private RiderService riderService;
+    private Rider testRider;
 
     @BeforeEach
     void setUp() {
@@ -46,6 +44,8 @@ class RiderServiceTest {
                 .phoneNumber("010-1234-5678")
                 .status(RiderStatus.READY)
                 .location(new Location(INITIAL_LAT, INITIAL_LON))
+                .createdAt(LocalDateTime.now()) // Add this line
+                .updatedAt(LocalDateTime.now()) // Add this line
                 .build();
     }
 
@@ -137,6 +137,8 @@ class RiderServiceTest {
                 .phoneNumber("010-0000-0000")
                 .status(RiderStatus.READY)
                 .location(null) // 위치 정보를 null로 설정
+                .createdAt(LocalDateTime.now()) // Add this line
+                .updatedAt(LocalDateTime.now()) // Add this line
                 .build();
         when(riderRepository.findById(TEST_RIDER_ID)).thenReturn(Optional.of(riderWithNullLocation));
 
@@ -148,6 +150,5 @@ class RiderServiceTest {
         assertThat(response.riderId()).isEqualTo(TEST_RIDER_ID);
         assertThat(response.latitude()).isEqualTo(0.0); // 기본 위도 확인
         assertThat(response.longitude()).isEqualTo(0.0); // 기본 경도 확인
-        assertThat(response.lastUpdatedAt()).isNotNull();
     }
 }

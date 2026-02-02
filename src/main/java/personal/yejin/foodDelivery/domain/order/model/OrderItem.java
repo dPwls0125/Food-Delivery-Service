@@ -1,15 +1,38 @@
 package personal.yejin.foodDelivery.domain.order.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.*;
+import personal.yejin.foodDelivery.domain.common.GlobalEntity;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class OrderItem {
+@Getter
+@Setter
+@Entity
+@Table(name = "order_items")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class OrderItem extends GlobalEntity {
     private Long menuId;
-    private String menuName; // 상세 조회 API에 포함된 메뉴명
+    private String menuName;
     private int quantity;
-    private int unitPrice; // 총 가격 계산을 위해 가정
+    private int unitPrice;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    @JsonIgnore
+    private Order order;
+
+    @Builder
+    public OrderItem(Long menuId, String menuName, int quantity, int unitPrice) {
+        this.menuId = menuId;
+        this.menuName = menuName;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+        if (!order.getOrderItems().contains(this)) {
+            order.getOrderItems().add(this);
+        }
+    }
 }

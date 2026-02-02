@@ -1,11 +1,9 @@
 package personal.yejin.foodDelivery.domain.order.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import personal.yejin.foodDelivery.domain.order.model.OrderBill;
-import java.util.Optional;
 import java.util.List;
 
-public interface OrderBillRepository {
-    OrderBill save(OrderBill orderBill);
-    Optional<OrderBill> findById(Long id);
-    List<OrderBill> findByOrderId(Long orderId);
+public interface OrderBillRepository extends JpaRepository<OrderBill, Long> {
+    List<OrderBill> findByOrder_Id(Long orderId);
 }

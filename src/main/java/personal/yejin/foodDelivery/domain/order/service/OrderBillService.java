@@ -1,18 +1,11 @@
 package personal.yejin.foodDelivery.domain.order.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
-
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
 import personal.yejin.foodDelivery.domain.order.model.*;
 import personal.yejin.foodDelivery.domain.order.repository.AppliedDiscountRepository;
 import personal.yejin.foodDelivery.domain.order.repository.OrderBillRepository;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -35,17 +28,22 @@ public class OrderBillService {
         // 2. Determine delivery fee (hardcoded for now)
         int deliveryFee = getDeliveryFee(order.getDeliveryType());
 
-        // 3. Calculate discounts
-        List<AppliedDiscount> appliedDiscounts = new ArrayList<>();
+        // 3. Create OrderBill instance first
+        OrderBill previewBill = OrderBill.builder()
+                .order(order)
+                .foodPrice(foodPrice)
+                .deliveryFee(deliveryFee)
+                .status(OrderBillStatus.PREVIEW)
+                .build();
+
+        // 4. Calculate discounts and associate with the bill
         int foodDiscount = 0;
         int deliveryDiscount = 0;
 
-        // 3a. Coupon discount applies to food price
         if (couponId.isPresent()) {
-            // In a real scenario, fetch coupon details and validate rules
             int couponDiscountAmount = 3000; // Example fixed discount
             foodDiscount += couponDiscountAmount;
-            appliedDiscounts.add(AppliedDiscount.builder()
+            previewBill.addAppliedDiscount(AppliedDiscount.builder()
                     .discountType(AppliedDiscountType.COUPON)
                     .amount(couponDiscountAmount)
                     .sourceId(couponId.get())
@@ -53,37 +51,21 @@ public class OrderBillService {
                     .build());
         }
 
-        // 3b. Baemin Club discount applies to delivery fee
         if (useBaeminClub) {
             int baeminClubDiscountAmount = (int) (deliveryFee * 0.1); // 10% of delivery fee
             deliveryDiscount += baeminClubDiscountAmount;
-            appliedDiscounts.add(AppliedDiscount.builder()
+            previewBill.addAppliedDiscount(AppliedDiscount.builder()
                     .discountType(AppliedDiscountType.BAEMIN_CLUB)
                     .amount(baeminClubDiscountAmount)
                     .description("배민클럽 배달비 할인")
                     .build());
         }
 
-        // 4. Create and save OrderBill
+        // 5. Set final price and save the bill with its discounts
         int finalPrice = (foodPrice - foodDiscount) + (deliveryFee - deliveryDiscount);
-
-        OrderBill previewBill = OrderBill.builder()
-                .orderId(order.getId())
-                .foodPrice(foodPrice)
-                .deliveryFee(deliveryFee)
-                .status(OrderBillStatus.PREVIEW)
-                .build();
         previewBill.setFinalPrice(finalPrice);
 
-        OrderBill savedOrderBill = orderBillRepository.save(previewBill);
-
-        // 5. Associate discounts with the saved bill and save them
-        for (AppliedDiscount discount : appliedDiscounts) {
-            discount.setOrderBillId(savedOrderBill.getId());
-            appliedDiscountRepository.save(discount);
-        }
-
-        return savedOrderBill;
+        return orderBillRepository.save(previewBill);
     }
 
     private int getDeliveryFee(DeliveryType deliveryType) {

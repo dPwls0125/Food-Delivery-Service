@@ -48,6 +48,9 @@ dependencies {
 	// 향후 API 설계 논의를 대비한 최소 Web 환경
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
+	// JPA
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
 	// 보일러플레이트 코드 감소를 위한 Lombok
 	// compileOnly + annotationProcessor 조합으로 런타임 의존성 제거
 	compileOnly 'org.projectlombok:lombok'
