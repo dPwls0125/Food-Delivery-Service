@@ -7,12 +7,14 @@ reviews:
   profile: chill
   high_level_summary: true
   poem: true
-  high_level_summary_placeholder: @coderabbitai summary
+  high_level_summary_placeholder: "@coderabbitai summary"
   auto_title_placeholder: "@coderabbitai"
 
   auto_review:
     enabled: true
     drafts: false
+    branches:
+      - develop
   # update to the tools you use, see full list: https://docs.coderabbit.ai/tools/list
   tools:
     eslint:
