@@ -1,7 +1,5 @@
 package personal.yejin.foodDelivery.domain.route.model;
 
-import java.time.LocalDateTime;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +7,8 @@ import lombok.experimental.SuperBuilder;
 import personal.yejin.foodDelivery.domain.common.GlobalEntity;
 import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
 import personal.yejin.foodDelivery.domain.rider.model.Location;
+
+import java.time.LocalDateTime;
 
 @Getter
 @SuperBuilder
@@ -22,7 +22,7 @@ public class Stop extends GlobalEntity {
     private LocalDateTime completedTime; // 완료 시간
     private int sequence;
 
-    public void setRoute(Route route) {
+    public void assignRoute(Route route) {
         this.route = route;
     }
 
@@ -37,4 +37,6 @@ public class Stop extends GlobalEntity {
     public void setSequence(int sequence) { // Changed 'i' to 'sequence' for clarity
         this.sequence = sequence;
     }
+
+
 }

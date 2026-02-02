@@ -1,20 +1,38 @@
 package personal.yejin.foodDelivery.domain.route.model;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import personal.yejin.foodDelivery.domain.common.GlobalEntity;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
-@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Route extends GlobalEntity {
+
     private Rider rider;
     private List<Stop> stops;
-    private LocalDateTime estimatedArrivalTime; // 예상 도착 시간
+
+    public static Route createRouteWithoutRider(List<Stop> stops) {
+        Route route = new Route();
+        route.stops = new ArrayList<>();
+        for (Stop stop : stops) {
+            route.stops.add(stop);
+            stop.assignRoute(route);
+        }
+
+        return route;
+    }
+
+    public void assignRider(Rider rider) {
+        this.rider = rider;
+    }
+
+    public Stop getStartLocation() {
+        return stops.get(0);
+    }
+
 }

@@ -1,19 +1,12 @@
 package personal.yejin.foodDelivery.domain.rider.repository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Repository;
-
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 
-@Repository
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
 public class InMemoryRiderRepository implements RiderRepository {
     private final Map<Long, Rider> store = new HashMap<>();
     private final AtomicLong sequence = new AtomicLong(0);
