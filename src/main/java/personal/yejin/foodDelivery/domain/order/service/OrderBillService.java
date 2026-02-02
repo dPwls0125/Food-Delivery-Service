@@ -30,15 +30,14 @@ public class OrderBillService {
 
         // 3. Create OrderBill instance first
         OrderBill previewBill = OrderBill.builder()
-                .order(order)
                 .foodPrice(foodPrice)
                 .deliveryFee(deliveryFee)
                 .status(OrderBillStatus.PREVIEW)
                 .build();
 
         // 4. Calculate discounts and associate with the bill
-        int foodDiscount = 0;
-        int deliveryDiscount = 0;
+        int foodDiscount = 0; // TODO : 쿠폰 객체 생성
+        int deliveryDiscount = 0; // TODO : 쿠폰 객체 생성
 
         if (couponId.isPresent()) {
             int couponDiscountAmount = 3000; // Example fixed discount

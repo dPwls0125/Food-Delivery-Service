@@ -31,7 +31,7 @@ public class OrderItem extends GlobalEntity {
 
     public void setOrder(Order order) {
         this.order = order;
-        if (!order.getOrderItems().contains(this)) {
+        if (order!=null && !order.getOrderItems().contains(this)) {
             order.getOrderItems().add(this);
         }
     }

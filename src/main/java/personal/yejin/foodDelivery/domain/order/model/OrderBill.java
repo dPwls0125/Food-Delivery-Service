@@ -40,5 +40,6 @@ public class OrderBill extends GlobalEntity {
     public void addAppliedDiscount(AppliedDiscount appliedDiscount) {
         appliedDiscounts.add(appliedDiscount);
         appliedDiscount.setOrderBill(this);
+        finalPrice -= appliedDiscount.getAmount();
     }
 }

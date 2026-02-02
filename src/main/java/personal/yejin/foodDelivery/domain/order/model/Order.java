@@ -19,10 +19,6 @@ import java.util.List;
 @EqualsAndHashCode(of = "id", callSuper = false)
 public class Order extends GlobalEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(nullable = false, name = "store_id")
     private Long storeId;
 

@@ -43,6 +43,9 @@ public class Route extends GlobalEntity {
     }
 
     public Stop getStartLocation() {
+        if(stops.isEmpty()){
+            throw new IllegalStateException("Route의 경로가 지정되지 않았습니다.");
+        }
         return stops.get(0);
     }
 

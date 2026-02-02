@@ -60,10 +60,8 @@ public class RiderService {
         Rider optimalRider = riderRepository
                 .findByStatus(RiderStatus.READY)
                 .stream()
+                .filter(rider -> rider.getLocation() != null)
                 .min(Comparator.comparingDouble(rider -> {
-                    if (rider.getLocation() == null) {
-                        return Double.MAX_VALUE; // Riders without location are not considered
-                    }
                     return startLocation.calculateDistanceInHaversineFormula(rider.getLocation());
                 }))
                 .orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다."));
