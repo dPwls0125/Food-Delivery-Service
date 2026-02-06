@@ -18,19 +18,18 @@ public class RiderService {
 
     private final RiderRepository riderRepository;
 
-
     public RiderLocationResponse updateRiderLocation(Long riderId, double latitude, double longitude) {
         Rider rider = riderRepository.findById(riderId)
                 .orElseThrow(() -> new IllegalArgumentException("라이더 아이디가 존재하지 않습니다." + riderId));
 
         rider.updateLocation(latitude, longitude);
-        riderRepository.save(rider);
+        riderRepository.save(rider); // Uncommented for mock verification
 
         return new RiderLocationResponse(
                 rider.getId(),
                 rider.getLocation().getLatitude(),
                 rider.getLocation().getLongitude(),
-                LocalDateTime.now()
+                rider.getUpdatedAt() // Use updated time from rider entity
         );
     }
 
@@ -39,12 +38,14 @@ public class RiderService {
                 .orElseThrow(() -> new IllegalArgumentException("라이더 아이디가 존재하지 않습니다." + riderId));
 
         Location location = rider.getLocation();
+        LocalDateTime lastUpdatedAt = rider.getUpdatedAt(); // Get updated time from rider entity
+
         if (location == null) {
             return new RiderLocationResponse(
                     rider.getId(),
                     0.0,
                     0.0,
-                    LocalDateTime.now()
+                    lastUpdatedAt // Use updated time from rider entity
             );
         }
 
@@ -52,7 +53,7 @@ public class RiderService {
                 rider.getId(),
                 location.getLatitude(),
                 location.getLongitude(),
-                LocalDateTime.now()
+                lastUpdatedAt // Use updated time from rider entity
         );
     }
 
@@ -60,12 +61,13 @@ public class RiderService {
         Rider optimalRider = riderRepository
                 .findByStatus(RiderStatus.READY)
                 .stream()
-                .min(Comparator.comparingDouble(rider -> startLocation.calculateDistanceInHaversineFormula(rider.getLocation()))
-                ).orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다."));
+                .filter(rider -> rider.getLocation() != null)
+                .min(Comparator.comparingDouble(rider -> {
+                    return startLocation.calculateDistanceInHaversineFormula(rider.getLocation());
+                }))
+                .orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다."));
 
         optimalRider.setStatus(RiderStatus.DISPATCHED);
-        riderRepository.save(optimalRider); // TODO : JPA 변경시 필요 없음.
-
         return optimalRider;
     }
 }

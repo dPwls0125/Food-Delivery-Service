@@ -2,6 +2,7 @@ package personal.yejin.foodDelivery.domain.delivery.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
@@ -9,12 +10,10 @@ import personal.yejin.foodDelivery.domain.delivery.repository.DeliveryRepository
 import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.rider.service.RiderService;
-import personal.yejin.foodDelivery.domain.route.RouteService;
 import personal.yejin.foodDelivery.domain.route.model.Route;
 import personal.yejin.foodDelivery.domain.route.model.Stop;
-import personal.yejin.foodDelivery.domain.route.model.StopType;
+import personal.yejin.foodDelivery.domain.route.service.RouteService;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -22,14 +21,16 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true) // 클래스 레벨에 readOnly 트랜잭션 적용
 public class DeliveryService {
-    private static final double BUNDLE_RADIUS_KM = 2.0; // 2km 이내
+    private static final double BUNDLE_RADIUS_KM = 2.0;
 
     private final RiderService riderService;
     private final RouteService routeService;
     private final DeliveryRepository deliveryRepository;
 
-    public Optional<Route> singleDelivery(Delivery delivery){
+    @Transactional
+    public Optional<Route> createSingleDelivery(Delivery delivery) {
         // 1. 단일 배송을 위한 Route 생성
         Route route = routeService.createSingleRoute(delivery);
 
@@ -40,13 +41,12 @@ public class DeliveryService {
         // 3. Route에 라이더 할당 및 정보 업데이트
         route.assignRider(riderOptimal);
 
-        // 4. Delivery 정보 업데이트 및 저장
         delivery.dispatch(route);
-        deliveryRepository.save(delivery);
 
         return Optional.of(route);
     }
 
+    @Transactional
     public Optional<Route> attemptToBundle(Delivery delivery1) {
         if (delivery1.getDeliveryType() != DeliveryType.BUNDLE || delivery1.getStatus() != DeliveryStatus.PENDING) {
             return Optional.empty();
@@ -58,7 +58,7 @@ public class DeliveryService {
         }
         Delivery delivery2 = candidateOpt.get();
 
-        Route route = routeService.getOptimalRouteWithoutRider(delivery1,delivery2);
+        Route route = routeService.getOptimalRouteWithoutRider(delivery1, delivery2);
         // 최적 경로의 시작 위치를 가져와 가장 가까운 최적의 라이더를 찾습니다.
         Stop startPoint = route.getStartLocation();
         Rider riderOptimal = riderService.assignRider(startPoint.getLocation());
@@ -66,11 +66,8 @@ public class DeliveryService {
         // 전체 Route 생성
         route.assignRider(riderOptimal);
 
-        // Update deliveries and rider
         delivery1.dispatch(route);
         delivery2.dispatch(route);
-        deliveryRepository.save(delivery1);
-        deliveryRepository.save(delivery2);
 
         return Optional.of(route);
     }
@@ -79,10 +76,11 @@ public class DeliveryService {
     private Optional<Delivery> findBundleCandidate(Delivery delivery) {
         Location pickupLocation1 = delivery.getOrder().getPickupLocation();
 
-        List<Delivery> candidates = deliveryRepository.findAll().stream()
-                .filter(d -> !d.getId().equals(delivery.getId()) &&
-                        d.getDeliveryType() == DeliveryType.BUNDLE &&
-                        d.getStatus() == DeliveryStatus.PENDING).toList();
+        List<Delivery> candidates = deliveryRepository.findByIdIsNotAndDeliveryTypeAndStatus(
+                delivery.getId(),
+                DeliveryType.BUNDLE,
+                DeliveryStatus.PENDING
+        );
 
         return candidates.stream()
                 .filter(candidate -> {

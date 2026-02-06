@@ -1,4 +1,4 @@
-package personal.yejin.foodDelivery.domain.route;
+package personal.yejin.foodDelivery.domain.route.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -6,7 +6,7 @@ import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
 import personal.yejin.foodDelivery.domain.route.model.Route;
 import personal.yejin.foodDelivery.domain.route.model.Stop;
 import personal.yejin.foodDelivery.domain.route.model.StopType;
-import personal.yejin.foodDelivery.domain.route.repository.RouteRepository;
+import personal.yejin.foodDelivery.domain.route.repository.RouteRepository; // 변경된 RouteRepository 임포트
 
 import java.util.ArrayList;
 import java.util.Comparator;

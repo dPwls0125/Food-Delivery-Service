@@ -1,5 +1,6 @@
 package personal.yejin.foodDelivery.domain.rider.model;
 
+import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Embeddable
 /**
  * Haversine formula to calculate distance between two lat/lon points
  *

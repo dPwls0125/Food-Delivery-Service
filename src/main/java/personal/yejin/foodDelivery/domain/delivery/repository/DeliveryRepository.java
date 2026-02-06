@@ -1,12 +1,12 @@
 package personal.yejin.foodDelivery.domain.delivery.repository;
 
 import java.util.List;
-import java.util.Optional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
 
-public interface DeliveryRepository {
-    Delivery save(Delivery delivery);
-    Optional<Delivery> findById(long id);
-    List<Delivery> findAll();
+public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
+    List<Delivery> findByIdIsNotAndDeliveryTypeAndStatus(Long id, DeliveryType deliveryType, DeliveryStatus status);
 }

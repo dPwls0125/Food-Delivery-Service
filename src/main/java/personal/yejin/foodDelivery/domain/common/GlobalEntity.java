@@ -1,15 +1,13 @@
 package personal.yejin.foodDelivery.domain.common;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter // For setId()
@@ -18,6 +16,8 @@ import lombok.experimental.SuperBuilder;
 @MappedSuperclass
 public abstract class GlobalEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id; // Make it protected so child classes can access in builder
 
     private LocalDateTime createdAt;
