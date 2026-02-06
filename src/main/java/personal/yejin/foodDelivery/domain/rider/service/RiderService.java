@@ -1,15 +1,16 @@
 package personal.yejin.foodDelivery.domain.rider.service;
 
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 import personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse;
 import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
-
-import java.time.LocalDateTime;
-import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +65,7 @@ public class RiderService {
 
         optimalRider.setStatus(RiderStatus.DISPATCHED);
         riderRepository.save(optimalRider); // TODO : JPA 변경시 필요 없음.
+
         return optimalRider;
     }
 }

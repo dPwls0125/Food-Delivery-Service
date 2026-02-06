@@ -1,12 +1,15 @@
 package personal.yejin.foodDelivery.domain.route.repository;
 
-import personal.yejin.foodDelivery.domain.route.model.Route;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.springframework.stereotype.Repository;
+
+import personal.yejin.foodDelivery.domain.route.model.Route;
+
+@Repository
 public class InMemoryRouteRepository implements RouteRepository {
     private final Map<Long, Route> store = new HashMap<>();
     private final AtomicLong sequence = new AtomicLong(0);
