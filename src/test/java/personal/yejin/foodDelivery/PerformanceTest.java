@@ -27,7 +27,8 @@ public class PerformanceTest {
     @Autowired
     private RiderRepository riderRepository;
 
-    private static final int NUMBER_OF_RIDERS = 100; // 성능 측정을 위한 라이더 수
+    private static final int NUMBER_OF_RIDERS = 5000; // 성능 측정을 위한 라이더 수
+    private static final int NUMBER_OF_RUNS = 10; // 각 메서드를 실행할 횟수
 
     @BeforeEach
     void setUp() {
@@ -49,15 +50,33 @@ public class PerformanceTest {
     @DisplayName("assignRider 메서드 성능 측정 (서버에서 필터링)")
     void testAssignRiderPerformance() {
         Location startLocation = new Location(37.5, 127.0);
-        riderService.assignRider(startLocation);
-        // AOP 로그로 성능 측정 결과 확인
+        List<Long> durations = new ArrayList<>();
+        System.out.println("\n--- assignRider Performance ---");
+        for (int i = 0; i < NUMBER_OF_RUNS; i++) {
+            long startTime = System.nanoTime();
+            riderService.assignRider(startLocation);
+            long endTime = System.nanoTime();
+            durations.add((endTime - startTime) / 1_000_000); // 밀리초 단위
+        }
+        double averageDuration = durations.stream().mapToLong(Long::longValue).average().orElse(0.0);
+        System.out.printf("Average execution time: %.2f ms\n", averageDuration);
+        System.out.println("---------------------------------");
     }
 
     @Test
     @DisplayName("assignRiderOptimized 메서드 성능 측정 (DB 쿼리 최적화)")
     void testAssignRiderOptimizedPerformance() {
         Location startLocation = new Location(37.5, 127.0);
-        riderService.assignRiderOptimized(startLocation);
-        // AOP 로그로 성능 측정 결과 확인
+        List<Long> durations = new ArrayList<>();
+        System.out.println("\n--- assignRiderOptimized Performance ---");
+        for (int i = 0; i < NUMBER_OF_RUNS; i++) {
+            long startTime = System.nanoTime();
+            riderService.assignRiderOptimized(startLocation);
+            long endTime = System.nanoTime();
+            durations.add((endTime - startTime) / 1_000_000); // 밀리초 단위
+        }
+        double averageDuration = durations.stream().mapToLong(Long::longValue).average().orElse(0.0);
+        System.out.printf("Average execution time: %.2f ms\n", averageDuration);
+        System.out.println("----------------------------------------");
     }
 }

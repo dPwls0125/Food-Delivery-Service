@@ -13,7 +13,7 @@ public class PerformanceAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceAspect.class);
 
-    @Around("execution(* personal.yejin.foodDelivery.domain.rider.service.RiderService.assignRider(..))")
+    @Around("execution(* personal.yejin.foodDelivery.domain.rider.service.RiderService.assignRider(..)) || execution(* personal.yejin.foodDelivery.domain.rider.service.RiderService.assignRiderOptimized(..))")
     public Object measureMethodExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.nanoTime();
 
