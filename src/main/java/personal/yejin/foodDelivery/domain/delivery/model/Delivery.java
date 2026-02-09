@@ -44,7 +44,13 @@ public class Delivery extends GlobalEntity {
         this.status = DeliveryStatus.DISPATCHED;
     }
 
-    public void setStatus(DeliveryStatus status) {
+    public Delivery(Order order, DeliveryType deliveryType) {
+        this.order = order;
+        this.deliveryType = deliveryType;
+        this.status = DeliveryStatus.PENDING;
+    }
+
+    public void updateStatus(DeliveryStatus status) {
         this.status = status;
     }
 }

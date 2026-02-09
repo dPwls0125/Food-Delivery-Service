@@ -28,6 +28,13 @@ public class DeliveryService {
 			&& delivery.getStatus() == DeliveryStatus.PENDING;
 	}
 
+	public Delivery updateDeliveryStatus(Long deliveryId, DeliveryStatus status) {
+	    Delivery delivery = deliveryRepository.findById(deliveryId)
+			.orElseThrow(() -> new IllegalArgumentException("Delivery not found with id: " + deliveryId));
+		delivery.updateStatus(status);
+		return delivery;
+	}
+
 	public Optional<Delivery> findBundleCandidate(Delivery delivery) {
 		Location pickupLocation1 = delivery.getOrder().getPickupLocation();
 
@@ -46,18 +53,18 @@ public class DeliveryService {
 	}
 
 	@Transactional
-	public Route dispatchSingle(Route route, Rider rider, Delivery delivery) {
+	public Delivery dispatchSingle(Route route, Rider rider, Delivery delivery) {
 		route.assignRider(rider);
 		delivery.dispatch(route);
-		return route;
+		return delivery;
 	}
 
 	@Transactional
-	public Route dispatchBundle(Route route, Rider rider, Delivery delivery1, Delivery delivery2) {
+	public Delivery dispatchBundle(Route route, Rider rider, Delivery delivery1, Delivery delivery2) {
 		route.assignRider(rider);
 		delivery1.dispatch(route);
 		delivery2.dispatch(route);
-		return route;
+		return delivery1;
 	}
 
 }

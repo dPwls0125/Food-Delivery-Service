@@ -1,5 +1,12 @@
 package personal.yejin.foodDelivery.domain.delivery.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
@@ -18,14 +26,6 @@ import personal.yejin.foodDelivery.domain.rider.service.RiderService;
 import personal.yejin.foodDelivery.domain.route.model.Route;
 import personal.yejin.foodDelivery.domain.route.model.Stop;
 import personal.yejin.foodDelivery.domain.route.service.RouteService;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DeliveryFacadeTest {
@@ -71,7 +71,7 @@ class DeliveryFacadeTest {
         when(riderService.assignRider(any(Location.class))).thenReturn(mockRider);
 
         // When
-        Optional<Route> resultRoute = deliveryFacade.createSingleDelivery(mockDelivery);
+        Optional<Delivery> resultRoute = deliveryFacade.createSingleDelivery(mockDelivery);
 
         // Then
         assertTrue(resultRoute.isPresent());
@@ -131,7 +131,7 @@ class DeliveryFacadeTest {
         when(riderService.assignRider(any(Location.class))).thenReturn(mockRider);
 
         // When
-        Optional<Route> resultRoute = deliveryFacade.attemptToBundle(delivery1);
+        Optional<Delivery> resultRoute = deliveryFacade.attemptToBundle(delivery1);
 
         // Then
         assertTrue(resultRoute.isPresent());
@@ -162,7 +162,7 @@ class DeliveryFacadeTest {
                 .build());
 
         // When
-        Optional<Route> resultRoute = deliveryFacade.attemptToBundle(mockDelivery);
+        Optional<Delivery> resultRoute = deliveryFacade.attemptToBundle(mockDelivery);
 
         // Then
         assertFalse(resultRoute.isPresent());
@@ -182,7 +182,7 @@ class DeliveryFacadeTest {
                 .build());
 
         // When
-        Optional<Route> resultRoute = deliveryFacade.attemptToBundle(mockDelivery);
+        Optional<Delivery> resultRoute = deliveryFacade.attemptToBundle(mockDelivery);
 
         // Then
         assertFalse(resultRoute.isPresent());
@@ -212,7 +212,7 @@ class DeliveryFacadeTest {
                 .thenReturn(List.of()); // 후보 없음 반환
 
         // When
-        Optional<Route> resultRoute = deliveryFacade.attemptToBundle(delivery1);
+        Optional<Delivery> resultRoute = deliveryFacade.attemptToBundle(delivery1);
 
         // Then
         assertFalse(resultRoute.isPresent());

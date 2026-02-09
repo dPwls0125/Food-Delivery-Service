@@ -1,50 +1,90 @@
 package personal.yejin.foodDelivery.domain.delivery.service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import personal.yejin.foodDelivery.domain.delivery.dto.DeliveryStatusUpdateResponse;
+import personal.yejin.foodDelivery.domain.delivery.dto.DispatchResponse;
 import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
-import personal.yejin.foodDelivery.domain.rider.model.Location;
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
+import personal.yejin.foodDelivery.domain.delivery.model.DispatchStatus;
+import personal.yejin.foodDelivery.domain.order.model.Order;
+import personal.yejin.foodDelivery.domain.order.service.OrderService;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.rider.service.RiderService;
 import personal.yejin.foodDelivery.domain.route.model.Route;
 import personal.yejin.foodDelivery.domain.route.model.Stop;
 import personal.yejin.foodDelivery.domain.route.service.RouteService;
 
-import java.util.Optional;
-
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
 public class DeliveryFacade {
-    private final RiderService riderService;
-    private final RouteService routeService;
-    private final DeliveryService deliveryService;
+	private final RiderService riderService;
+	private final RouteService routeService;
+	private final DeliveryService deliveryService;
+	private final OrderService orderService;
 
-    @Transactional
-    public Optional<Route> createSingleDelivery(Delivery delivery) {
-        Route route = routeService.createSingleRoute(delivery);
-        Stop startPoint = route.getStartLocation();
-        Rider riderOptimal = riderService.assignRider(startPoint.getLocation());
-        return Optional.of(deliveryService.dispatchSingle(route, riderOptimal, delivery));
-    }
+	public DeliveryStatusUpdateResponse updateDeliveryStatus(Long deliveryId, DeliveryStatus status) {
+	    Delivery delivery = deliveryService.updateDeliveryStatus(deliveryId, status);
+		return new DeliveryStatusUpdateResponse(delivery.getOrder().getId(), delivery.getStatus());
+	}
 
-    @Transactional
-    public Optional<Route> attemptToBundle(Delivery delivery1) {
-        if (!deliveryService.isBundleEligible(delivery1)) {
-            return Optional.empty();
-        }
+	@Transactional
+	public DispatchResponse dispatchRiderAndCreateDelivery(Long orderId, DeliveryType deliveryType){
 
-        Optional<Delivery> candidateOpt = deliveryService.findBundleCandidate(delivery1);
-        if (candidateOpt.isEmpty()) {
-            return Optional.empty();
-        }
+		Order order = orderService.getOrderById(orderId);
+		Delivery delivery = new Delivery(order, deliveryType);
+		Optional<Delivery> dispatchedDeliveryOpt;
 
-        Delivery delivery2 = candidateOpt.get();
-        Route route = routeService.getOptimalRouteWithoutRider(delivery1, delivery2);
-        Stop startPoint = route.getStartLocation();
-        Rider riderOptimal = riderService.assignRider(startPoint.getLocation());
+		if (deliveryType == DeliveryType.SINGLE) {
+			dispatchedDeliveryOpt = createSingleDelivery(delivery);
+		} else {
+			dispatchedDeliveryOpt = attemptToBundle(delivery);
+			if (dispatchedDeliveryOpt.isEmpty()) {
+				dispatchedDeliveryOpt = createSingleDelivery(delivery);
+			}
+		}
 
-        return Optional.of(deliveryService.dispatchBundle(route, riderOptimal, delivery1, delivery2));
-    }
+		Delivery dispatchedDelivery = dispatchedDeliveryOpt.orElseThrow(
+			() -> new IllegalStateException("배달 생성에 실패했습니다."));
+
+		return new DispatchResponse(
+			dispatchedDelivery.getOrder().getId(),
+			dispatchedDelivery.getId(),
+			DispatchStatus.REQUESTED,
+			dispatchedDelivery.getDeliveryType()
+		);
+	}
+
+	@Transactional
+	public Optional<Delivery> createSingleDelivery(Delivery delivery) {
+		Route route = routeService.createSingleRoute(delivery);
+		Stop startPoint = route.getStartLocation();
+		Rider riderOptimal = riderService.assignRider(startPoint.getLocation());
+		return Optional.of(deliveryService.dispatchSingle(route, riderOptimal, delivery));
+	}
+
+	@Transactional
+	public Optional<Delivery> attemptToBundle(Delivery delivery1) {
+		if (!deliveryService.isBundleEligible(delivery1)) {
+			return Optional.empty();
+		}
+
+		Optional<Delivery> candidateOpt = deliveryService.findBundleCandidate(delivery1);
+		if (candidateOpt.isEmpty()) {
+			return Optional.empty();
+		}
+
+		Delivery delivery2 = candidateOpt.get();
+		Route route = routeService.getOptimalRouteWithoutRider(delivery1, delivery2);
+		Stop startPoint = route.getStartLocation();
+		Rider riderOptimal = riderService.assignRider(startPoint.getLocation());
+
+		return Optional.of(deliveryService.dispatchBundle(route, riderOptimal, delivery1, delivery2));
+	}
 }
