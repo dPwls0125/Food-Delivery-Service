@@ -38,10 +38,14 @@ public class Delivery extends GlobalEntity {
     @JoinColumn(name = "route_id")
     private Route route;
 
+    public void setRider(Rider rider) {
+        this.rider = rider;
+    }
+
     public void dispatch(Route route) {
         this.route = route;
-        this.rider = route.getRider();
-        this.status = DeliveryStatus.DISPATCHED;
+        this.setRider(route.getRider()); // Use the dedicated setRider method
+        this.updateStatus(DeliveryStatus.DISPATCHED); // Use the dedicated updateStatus method
     }
 
     public Delivery(Order order, DeliveryType deliveryType) {

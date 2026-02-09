@@ -15,6 +15,7 @@ import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.route.model.Route;
 
+
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true) // 클래스 레벨에 readOnly 트랜잭션 적용
@@ -29,7 +30,7 @@ public class DeliveryService {
 	}
 
 	public Delivery updateDeliveryStatus(Long deliveryId, DeliveryStatus status) {
-	    Delivery delivery = deliveryRepository.findById(deliveryId)
+		Delivery delivery = deliveryRepository.findById(deliveryId)
 			.orElseThrow(() -> new IllegalArgumentException("Delivery not found with id: " + deliveryId));
 		delivery.updateStatus(status);
 		return delivery;
