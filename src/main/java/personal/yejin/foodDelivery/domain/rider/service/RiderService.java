@@ -79,7 +79,7 @@ public class RiderService {
         log.info("Searching for nearest rider with startLatitude: {}, startLongitude: {}", startLocation.getLatitude(), startLocation.getLongitude());
 
         // 1. 모든 READY 상태의 라이더를 조회
-        Rider optimalRider = riderRepository.findNearestRiderByStatus(RiderStatus.READY, startLocation.getLatitude(),
+        Rider optimalRider = riderRepository.findNearestRiderByStatus(RiderStatus.READY.name(), startLocation.getLatitude(),
                 startLocation.getLongitude())
                 .orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다.")); // 최적 라이더가 없으면 예외 발생
 

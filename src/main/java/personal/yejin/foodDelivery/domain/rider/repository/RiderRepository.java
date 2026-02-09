@@ -12,7 +12,7 @@ import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 public interface RiderRepository extends JpaRepository<Rider, Long> {
 	List<Rider> findByStatus(RiderStatus status);
 
-	@Query(value = """
+    @Query(value = """
             SELECT r.*, sub.distance_val
             FROM riders r
             JOIN (
@@ -28,12 +28,14 @@ public interface RiderRepository extends JpaRepository<Rider, Long> {
                        ) AS distance_val
                 FROM riders r_inner
                 WHERE r_inner.status = :status
+                  AND r_inner.latitude IS NOT NULL
+                  AND r_inner.longitude IS NOT NULL
             ) sub ON r.id = sub.id
             WHERE sub.distance_val IS NOT NULL
             ORDER BY sub.distance_val ASC
             LIMIT 1
             """, nativeQuery = true)
     Optional<Rider> findNearestRiderByStatus(
-            @Param("status") RiderStatus status,
+            @Param("status") String status,
             @Param("startLatitude") double startLatitude,
             @Param("startLongitude") double startLongitude);}
