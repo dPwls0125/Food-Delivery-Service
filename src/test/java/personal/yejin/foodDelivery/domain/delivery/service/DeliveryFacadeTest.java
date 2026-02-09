@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DeliveryServiceTest {
+class DeliveryFacadeTest {
 
     @Mock
     private RiderService riderService;
@@ -39,6 +39,9 @@ class DeliveryServiceTest {
 
     @InjectMocks
     private DeliveryService deliveryService;
+
+    @InjectMocks
+    private DeliveryFacade deliveryFacade;
 
     @Test
     @DisplayName("단일 배송 처리 테스트")
@@ -68,7 +71,7 @@ class DeliveryServiceTest {
         when(riderService.assignRider(any(Location.class))).thenReturn(mockRider);
 
         // When
-        Optional<Route> resultRoute = deliveryService.createSingleDelivery(mockDelivery);
+        Optional<Route> resultRoute = deliveryFacade.createSingleDelivery(mockDelivery);
 
         // Then
         assertTrue(resultRoute.isPresent());
@@ -128,7 +131,7 @@ class DeliveryServiceTest {
         when(riderService.assignRider(any(Location.class))).thenReturn(mockRider);
 
         // When
-        Optional<Route> resultRoute = deliveryService.attemptToBundle(delivery1);
+        Optional<Route> resultRoute = deliveryFacade.attemptToBundle(delivery1);
 
         // Then
         assertTrue(resultRoute.isPresent());
@@ -159,7 +162,7 @@ class DeliveryServiceTest {
                 .build());
 
         // When
-        Optional<Route> resultRoute = deliveryService.attemptToBundle(mockDelivery);
+        Optional<Route> resultRoute = deliveryFacade.attemptToBundle(mockDelivery);
 
         // Then
         assertFalse(resultRoute.isPresent());
@@ -179,7 +182,7 @@ class DeliveryServiceTest {
                 .build());
 
         // When
-        Optional<Route> resultRoute = deliveryService.attemptToBundle(mockDelivery);
+        Optional<Route> resultRoute = deliveryFacade.attemptToBundle(mockDelivery);
 
         // Then
         assertFalse(resultRoute.isPresent());
@@ -209,7 +212,7 @@ class DeliveryServiceTest {
                 .thenReturn(List.of()); // 후보 없음 반환
 
         // When
-        Optional<Route> resultRoute = deliveryService.attemptToBundle(delivery1);
+        Optional<Route> resultRoute = deliveryFacade.attemptToBundle(delivery1);
 
         // Then
         assertFalse(resultRoute.isPresent());
