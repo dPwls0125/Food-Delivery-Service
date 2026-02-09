@@ -36,6 +36,6 @@ public interface RiderRepository extends JpaRepository<Rider, Long> {
             LIMIT 1
             """, nativeQuery = true)
     Optional<Rider> findNearestRiderByStatus(
-            @Param("status") RiderStatus status,
+            @Param("status") String status,
             @Param("startLatitude") double startLatitude,
             @Param("startLongitude") double startLongitude);}
