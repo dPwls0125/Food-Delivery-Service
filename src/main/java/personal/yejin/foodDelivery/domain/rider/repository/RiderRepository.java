@@ -20,16 +20,16 @@ public interface RiderRepository extends JpaRepository<Rider, Long> {
                        (
                            6371 * acos(
                            GREATEST(-1, LEAST(1,
-                               cos(radians(:startLatitude)) * cos(radians(r_inner.location_latitude)) *
-                               cos(radians(r_inner.location_longitude) - radians(:startLongitude)) +
-                               sin(radians(:startLatitude)) * sin(radians(r_inner.location_latitude))
+                               cos(radians(:startLatitude)) * cos(radians(r_inner.latitude)) *
+                               cos(radians(r_inner.longitude) - radians(:startLongitude)) +
+                               sin(radians(:startLatitude)) * sin(radians(r_inner.latitude))
                            ))
                        )
                        ) AS distance_val
                 FROM riders r_inner
                 WHERE r_inner.status = :status
-                  AND r_inner.location_latitude IS NOT NULL
-                  AND r_inner.location_longitude IS NOT NULL
+                  AND r_inner.latitude IS NOT NULL
+                  AND r_inner.longitude IS NOT NULL
             ) sub ON r.id = sub.id
             WHERE sub.distance_val IS NOT NULL
             ORDER BY sub.distance_val ASC
