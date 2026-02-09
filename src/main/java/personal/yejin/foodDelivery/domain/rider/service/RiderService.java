@@ -6,12 +6,14 @@ import java.util.Comparator;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse;
 import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RiderService {
@@ -68,6 +70,22 @@ public class RiderService {
                 .orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다."));
 
         optimalRider.setStatus(RiderStatus.DISPATCHED);
+        riderRepository.save(optimalRider); // 상태 변경 후 저장
+        return optimalRider;
+    }
+
+    // DB 쿼리로 최적화된 라이더를 찾는 메서드를 Java 로직으로 변경
+    public Rider assignRiderOptimized(Location startLocation) {
+        log.info("Searching for nearest rider with startLatitude: {}, startLongitude: {}", startLocation.getLatitude(), startLocation.getLongitude());
+
+        // 1. 모든 READY 상태의 라이더를 조회
+        Rider optimalRider = riderRepository.findNearestRiderByStatus(RiderStatus.READY, startLocation.getLatitude(),
+                startLocation.getLongitude())
+                .orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다.")); // 최적 라이더가 없으면 예외 발생
+
+        // 2. 최적 라이더의 상태 변경 및 저장
+        optimalRider.setStatus(RiderStatus.DISPATCHED);
+        riderRepository.save(optimalRider);
         return optimalRider;
     }
 }
