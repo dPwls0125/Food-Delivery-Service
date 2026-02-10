@@ -59,7 +59,7 @@ class DeliveryFacadeTest {
                 .deliveryType(DeliveryType.SINGLE)
                 .status(DeliveryStatus.PENDING)
                 .build());
-        Rider mockRider = Rider.builder().id(1L).name("Test Rider").build();
+        Rider mockRider = Rider.builder().id(1L).name("TestLogging Rider").build();
 
         Route mockRoute = Mockito.mock(Route.class); // Route를 mock으로 생성
         Stop mockStop = Mockito.mock(Stop.class); // Stop도 Mock으로 생성
@@ -134,7 +134,7 @@ class DeliveryFacadeTest {
         doCallRealMethod().when(delivery2).getRider();
         doCallRealMethod().when(delivery2).getStatus();
 
-        Rider mockRider = Rider.builder().id(1L).name("Test Rider").build();
+        Rider mockRider = Rider.builder().id(1L).name("TestLogging Rider").build();
 
         when(deliveryRepository.findByIdIsNotAndDeliveryTypeAndStatus(anyLong(), any(DeliveryType.class), any(DeliveryStatus.class)))
                 .thenReturn(List.of(delivery2)); // delivery1의 후보로 delivery2 반환

@@ -19,7 +19,7 @@ import personal.yejin.foodDelivery.domain.rider.service.RiderService;
 
 @SpringBootTest
 @Transactional
-public class PerformanceTest {
+public class QueryPerformanceTest {
 
     @Autowired
     private RiderService riderService;
@@ -38,7 +38,7 @@ public class PerformanceTest {
         List<Rider> ridersToSave = new ArrayList<>();
         IntStream.range(0, NUMBER_OF_RIDERS).forEach(i -> {
             ridersToSave.add(Rider.builder()
-                    .name("Test Rider " + i)
+                    .name("TestLogging Rider " + i)
                     .location(new Location(37.5 + (i * 0.00001), 127.0 + (i * 0.00001))) // 약간씩 다른 위치
                     .status(RiderStatus.READY)
                     .build());

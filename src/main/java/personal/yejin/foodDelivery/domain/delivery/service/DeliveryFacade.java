@@ -64,7 +64,7 @@ public class DeliveryFacade {
 	@Transactional
 	public Optional<Delivery> createSingleDelivery(Delivery delivery) {
 		Route route = routeService.createSingleRoute(delivery);
-		Stop startPoint = route.getStartLocation();
+		Stop startPoint = (route.getStartLocation());
 		Rider riderOptimal = riderService.assignRider(startPoint.getLocation());
 		return Optional.of(deliveryService.dispatchSingle(route, riderOptimal, delivery));
 	}

@@ -2,7 +2,7 @@
 //
 // import com.fasterxml.jackson.databind.ObjectMapper;
 // import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.TestLogging;
 // import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 // import org.springframework.http.MediaType;
@@ -26,7 +26,7 @@
 //     @Autowired
 //     private ObjectMapper objectMapper;
 //
-//     @Test
+//     @TestLogging
 //     @DisplayName("라이더 매칭 요청 API 테스트")
 //     void testRequestDispatch() throws Exception {
 //         // given
@@ -46,7 +46,7 @@
 //                 .andExpect(jsonPath("$.deliveryType").isString());
 //     }
 //
-//     @Test
+//     @TestLogging
 //     @DisplayName("배달 상태 변경 API 테스트")
 //     void testUpdateDeliveryStatus() throws Exception {
 //         // given
