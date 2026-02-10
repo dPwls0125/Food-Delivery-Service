@@ -1,13 +1,23 @@
 package personal.yejin.foodDelivery.domain.route.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import personal.yejin.foodDelivery.domain.common.GlobalEntity;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "routes")
