@@ -20,8 +20,8 @@ import java.util.stream.IntStream;
 @Transactional
 public class QueryPerformanceTest {
 
-    private static final int NUMBER_OF_RIDERS = 500; // 5000 -> 500
-    private static final int NUMBER_OF_RUNS = 10; // 100 -> 10
+    private static final int NUMBER_OF_RIDERS = 5000;
+    private static final int NUMBER_OF_RUNS = 100;
     @Autowired
     private RiderService riderService;
     @Autowired
