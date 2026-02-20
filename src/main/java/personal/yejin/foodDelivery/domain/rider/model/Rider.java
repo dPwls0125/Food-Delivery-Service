@@ -16,10 +16,10 @@ import java.time.LocalDateTime;
 @Table(
         name = "riders",
         indexes = {
-            @Index(
-                    name = "idx_riders_dispatchable_search",
-                    columnList = "status, location_latitude, location_longitude"
-            )
+                @Index(
+                        name = "idx_riders_dispatchable_search",
+                        columnList = "status, location_latitude, location_longitude"
+                )
         }
 )
 public class Rider extends GlobalEntity {
@@ -30,15 +30,19 @@ public class Rider extends GlobalEntity {
     private RiderStatus status;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "latitude", column = @Column(name = "location_latitude")),
+            @AttributeOverride(name = "longitude", column = @Column(name = "location_longitude"))
+    })
     private Location location;
 
     public void updateLocation(double latitude, double longitude) {
         this.location = new Location(latitude, longitude);
-        this.setUpdatedAt(LocalDateTime.now()); // Assuming GlobalEntity has setUpdatedAt
+        this.setUpdatedAt(LocalDateTime.now());
     }
 
     public void setStatus(RiderStatus status) {
         this.status = status;
-        this.setUpdatedAt(LocalDateTime.now()); // Assuming GlobalEntity has setUpdatedAt
+        this.setUpdatedAt(LocalDateTime.now());
     }
 }

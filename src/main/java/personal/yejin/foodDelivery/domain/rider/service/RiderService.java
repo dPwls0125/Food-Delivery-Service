@@ -73,17 +73,21 @@ public class RiderService {
         return optimalRider;
     }
 
-    // DB 쿼리로 최적화된 라이더를 찾는 메서드를 Java 로직으로 변경
+    // DB 쿼리와 인덱스(Bounding Box)를 활용하여 최적화된 라이더를 찾는 메서드
     public Rider assignRiderOptimized(Location startLocation) {
+        double range = 0.05; // 약 5km 범위
+        double minLat = startLocation.getLatitude() - range;
+        double maxLat = startLocation.getLatitude() + range;
+        double minLon = startLocation.getLongitude() - range;
+        double maxLon = startLocation.getLongitude() + range;
 
-        Rider optimalRider = riderRepository.findByStatus(RiderStatus.READY)
-                .stream()
-                .filter(rider -> rider.getLocation() != null) // 위치 정보가 있는 라이더만 필터링
-                .min(Comparator.comparingDouble(rider ->
-                        startLocation.calculateDistanceInHaversineFormula(rider.getLocation()))) // Java 코드에서 거리 계산
-                .orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다.")); // 최적 라이더가 없으면 예외 발생
+        Rider optimalRider = riderRepository.findNearestRiderByStatusWithBounds(
+                        RiderStatus.READY.name(),
+                        startLocation.getLatitude(),
+                        startLocation.getLongitude(),
+                        minLat, maxLat, minLon, maxLon)
+                .orElseThrow(() -> new IllegalStateException("주변 5km 이내에 배차 가능한 Rider가 존재하지 않습니다."));
 
-        // 2. 최적 라이더의 상태 변경 및 저장
         optimalRider.setStatus(RiderStatus.DISPATCHED);
         riderRepository.save(optimalRider);
         return optimalRider;

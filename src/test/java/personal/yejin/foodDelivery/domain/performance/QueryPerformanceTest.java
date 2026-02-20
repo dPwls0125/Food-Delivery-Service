@@ -27,19 +27,21 @@ public class QueryPerformanceTest {
     private RiderRepository riderRepository;
 
     private static final int NUMBER_OF_RIDERS = 5000; // 성능 측정을 위한 라이더 수
-    private static final int NUMBER_OF_RUNS = 10; // 각 메서드를 실행할 횟수
+    private static final int NUMBER_OF_RUNS = 100; // 각 메서드를 실행할 횟수
 
     @BeforeEach
     void setUp() {
         riderRepository.deleteAll(); // 기존 데이터 삭제
-
-        // 대량의 Ready 상태 라이더를 DB에 저장
         List<Rider> ridersToSave = new ArrayList<>();
         IntStream.range(0, NUMBER_OF_RIDERS).forEach(i -> {
+            RiderStatus status = RiderStatus.READY;
+            if (i > 2500) {
+                status = RiderStatus.DISPATCHED;
+            }
             ridersToSave.add(Rider.builder()
                     .name("TestLogging Rider " + i)
-                    .location(new Location(37.5 + (i * 0.00001), 127.0 + (i * 0.00001))) // 약간씩 다른 위치
-                    .status(RiderStatus.READY)
+                    .location(new Location(37.5 + (i * 0.00001), 127.0 + (i * 0.00001)))
+                    .status(status)
                     .build());
         });
         riderRepository.saveAll(ridersToSave);
