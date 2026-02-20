@@ -1,8 +1,4 @@
-package personal.yejin.foodDelivery;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
+package personal.yejin.foodDelivery.domain.performance;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,12 +6,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
 import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
 import personal.yejin.foodDelivery.domain.rider.service.RiderService;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
 
 @SpringBootTest
 @Transactional

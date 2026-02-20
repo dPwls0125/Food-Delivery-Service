@@ -13,7 +13,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SuperBuilder
 @Entity
-@Table(name = "riders")
+@Table(
+        name = "riders",
+        indexes = {
+            @Index(
+                    name = "idx_riders_dispatchable_search",
+                    columnList = "status, location_latitude, location_longitude"
+            )
+        }
+)
 public class Rider extends GlobalEntity {
     private String name;
     private String phoneNumber;
