@@ -3,6 +3,7 @@ package personal.yejin.foodDelivery.domain.rider.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse;
 import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
@@ -58,9 +59,10 @@ public class RiderService {
         );
     }
 
+    @Transactional
     public Rider assignRider(Location startLocation) {
         Rider optimalRider = riderRepository
-                .findByStatus(RiderStatus.READY)
+                .findByStatusWithLock(RiderStatus.READY)
                 .stream()
                 .filter(rider -> rider.getLocation() != null)
                 .min(Comparator.comparingDouble(rider -> {
@@ -69,11 +71,11 @@ public class RiderService {
                 .orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다."));
 
         optimalRider.setStatus(RiderStatus.DISPATCHED);
-        riderRepository.save(optimalRider); // 상태 변경 후 저장
         return optimalRider;
     }
 
-    // DB 쿼리와 인덱스(Bounding Box)를 활용하여 최적화된 라이더를 찾는 메서드
+
+    @Transactional
     public Rider assignRiderOptimized(Location startLocation) {
         double range = 0.05; // 약 5km 범위
         double minLat = startLocation.getLatitude() - range;
@@ -89,7 +91,6 @@ public class RiderService {
                 .orElseThrow(() -> new IllegalStateException("주변 5km 이내에 배차 가능한 Rider가 존재하지 않습니다."));
 
         optimalRider.setStatus(RiderStatus.DISPATCHED);
-        riderRepository.save(optimalRider);
         return optimalRider;
     }
 }

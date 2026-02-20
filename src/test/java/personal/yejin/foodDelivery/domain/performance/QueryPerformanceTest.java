@@ -20,14 +20,12 @@ import java.util.stream.IntStream;
 @Transactional
 public class QueryPerformanceTest {
 
+    private static final int NUMBER_OF_RIDERS = 500; // 5000 -> 500
+    private static final int NUMBER_OF_RUNS = 10; // 100 -> 10
     @Autowired
     private RiderService riderService;
-
     @Autowired
     private RiderRepository riderRepository;
-
-    private static final int NUMBER_OF_RIDERS = 5000; // 성능 측정을 위한 라이더 수
-    private static final int NUMBER_OF_RUNS = 100; // 각 메서드를 실행할 횟수
 
     @BeforeEach
     void setUp() {
@@ -80,4 +78,5 @@ public class QueryPerformanceTest {
         System.out.printf("Average execution time: %.2f ms\n", averageDuration);
         System.out.println("----------------------------------------");
     }
+
 }

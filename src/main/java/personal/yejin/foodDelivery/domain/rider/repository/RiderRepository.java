@@ -1,16 +1,20 @@
 package personal.yejin.foodDelivery.domain.rider.repository;
 
-import java.util.List;
-import java.util.Optional;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface RiderRepository extends JpaRepository<Rider, Long> {
-	List<Rider> findByStatus(RiderStatus status);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM Rider r WHERE r.status = :status AND r.location IS NOT NULL ORDER BY r.id")
+    List<Rider> findByStatusWithLock(@Param("status") RiderStatus status);
 
     @Query(value = """
             SELECT *
@@ -23,6 +27,7 @@ public interface RiderRepository extends JpaRepository<Rider, Long> {
                 POINT(:startLongitude, :startLatitude)
             ) ASC
             LIMIT 1
+            FOR UPDATE
             """, nativeQuery = true)
     Optional<Rider> findNearestRiderByStatusWithBounds(
             @Param("status") String status,
