@@ -36,6 +36,11 @@ public class DeliveryService {
 		return delivery;
 	}
 
+	@Transactional
+	public Delivery save(Delivery delivery) {
+		return deliveryRepository.save(delivery);
+	}
+
 	public Optional<Delivery> findBundleCandidate(Delivery delivery) {
 		Location pickupLocation1 = delivery.getOrder().getPickupLocation();
 

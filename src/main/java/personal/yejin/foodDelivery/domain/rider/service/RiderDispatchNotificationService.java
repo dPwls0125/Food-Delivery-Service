@@ -71,7 +71,9 @@ public class RiderDispatchNotificationService {
     private void sendConnectEvent(Long riderId, SseEmitter emitter) {
         try {
             emitter.send(SseEmitter.event()
-                    .name("connected"));
+                    .name("connected")
+                    .data("riderId=" + riderId)
+            );
         } catch (IOException e) {
             removeEmitter(riderId, emitter);
             throw new RuntimeException("SSE 연결 실패");

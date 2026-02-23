@@ -41,6 +41,8 @@ public class DeliveryFacade {
 
         Order order = orderService.getOrderById(orderId);
         Delivery delivery = new Delivery(order, deliveryType);
+        delivery = deliveryService.save(delivery);
+        
         Optional<Delivery> dispatchedDeliveryOpt;
 
         if (deliveryType == DeliveryType.SINGLE) {
