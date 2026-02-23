@@ -38,6 +38,9 @@ public class Delivery extends GlobalEntity {
     @JoinColumn(name = "route_id")
     private Route route;
 
+    @Column(name = "near_arrival_notified", nullable = false)
+    private boolean nearArrivalNotified;
+
     public void setRider(Rider rider) {
         this.rider = rider;
     }
@@ -52,9 +55,14 @@ public class Delivery extends GlobalEntity {
         this.order = order;
         this.deliveryType = deliveryType;
         this.status = DeliveryStatus.PENDING;
+        this.nearArrivalNotified = false;
     }
 
     public void updateStatus(DeliveryStatus status) {
         this.status = status;
+    }
+
+    public void markNearArrivalNotified() {
+        this.nearArrivalNotified = true;
     }
 }

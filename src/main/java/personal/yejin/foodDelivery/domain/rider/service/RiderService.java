@@ -4,6 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
+import personal.yejin.foodDelivery.domain.delivery.repository.DeliveryRepository;
+import personal.yejin.foodDelivery.domain.order.service.OrderDeliveryNotificationService;
 import personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse;
 import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
@@ -11,21 +15,26 @@ import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Comparator;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RiderService {
+    private static final double NEAR_ARRIVAL_THRESHOLD_KM = 0.5;
 
     private final RiderRepository riderRepository;
+    private final DeliveryRepository deliveryRepository;
+    private final OrderDeliveryNotificationService orderDeliveryNotificationService;
 
+    @Transactional
     public RiderLocationResponse updateRiderLocation(Long riderId, double latitude, double longitude) {
         Rider rider = riderRepository.findById(riderId)
                 .orElseThrow(() -> new IllegalArgumentException("라이더 아이디가 존재하지 않습니다." + riderId));
 
         rider.updateLocation(latitude, longitude);
-        riderRepository.save(rider);
+        notifyNearArrivalIfNeeded(rider);
 
         return new RiderLocationResponse(
                 rider.getId(),
@@ -33,6 +42,27 @@ public class RiderService {
                 rider.getLocation().getLongitude(),
                 rider.getUpdatedAt()
         );
+    }
+
+    private void notifyNearArrivalIfNeeded(Rider rider) {
+        List<Delivery> activeDeliveries = deliveryRepository.findByRiderIdAndStatusIn(
+                rider.getId(),
+                List.of(DeliveryStatus.DISPATCHED, DeliveryStatus.PICKED_UP)
+        );
+
+        for (Delivery delivery : activeDeliveries) {
+            if (delivery.isNearArrivalNotified()) {
+                continue;
+            }
+
+            Location destination = delivery.getOrder().getDeliveryLocation();
+            double distanceKm = rider.getLocation().calculateDistanceInHaversineFormula(destination);
+
+            if (distanceKm <= NEAR_ARRIVAL_THRESHOLD_KM) {
+                orderDeliveryNotificationService.notifyNearArrival(delivery, distanceKm);
+                delivery.markNearArrivalNotified();
+            }
+        }
     }
 
     public RiderLocationResponse getRiderLocation(Long riderId) {
