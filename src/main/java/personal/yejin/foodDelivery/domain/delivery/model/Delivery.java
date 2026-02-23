@@ -34,7 +34,7 @@ public class Delivery extends GlobalEntity {
     @Column(name = "delivery_type")
     private DeliveryType deliveryType;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "route_id")
     private Route route;
 
