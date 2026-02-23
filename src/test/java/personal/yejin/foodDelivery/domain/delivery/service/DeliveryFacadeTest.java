@@ -1,12 +1,5 @@
 package personal.yejin.foodDelivery.domain.delivery.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import java.util.List;
-import java.util.Optional;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
@@ -26,6 +18,13 @@ import personal.yejin.foodDelivery.domain.rider.service.RiderService;
 import personal.yejin.foodDelivery.domain.route.model.Route;
 import personal.yejin.foodDelivery.domain.route.model.Stop;
 import personal.yejin.foodDelivery.domain.route.service.RouteService;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DeliveryFacadeTest {
@@ -68,7 +67,7 @@ class DeliveryFacadeTest {
         when(mockRoute.getRider()).thenReturn(mockRider); // Mock getRider() for mockRoute
 
         when(routeService.createSingleRoute(any(Delivery.class))).thenReturn(mockRoute);
-        when(riderService.assignRider(any(Location.class))).thenReturn(mockRider);
+        when(riderService.assignRiderOptimized(any(Location.class))).thenReturn(mockRider);
         doAnswer(invocation -> {
             Route routeArg = invocation.getArgument(0);
             Rider riderArg = invocation.getArgument(1);
@@ -85,7 +84,7 @@ class DeliveryFacadeTest {
         assertEquals(mockDelivery.getId(), resultRoute.get().getId()); // Delivery should retain its own ID
         verify(routeService, times(1)).createSingleRoute(mockDelivery);
         verify(mockRoute, times(1)).getStartLocation();
-        verify(riderService, times(1)).assignRider(mockStop.getLocation());
+        verify(riderService, times(1)).assignRiderOptimized(mockStop.getLocation());
         verify(mockDelivery, times(1)).dispatch(mockRoute);
 
         // dispatch 후 상태 변화 검증
@@ -146,7 +145,7 @@ class DeliveryFacadeTest {
         when(mockRoute.getRider()).thenReturn(mockRider); // Mock getRider() for mockRoute
 
         when(routeService.getOptimalRouteWithoutRider(any(Delivery.class), any(Delivery.class))).thenReturn(mockRoute);
-        when(riderService.assignRider(any(Location.class))).thenReturn(mockRider);
+        when(riderService.assignRiderOptimized(any(Location.class))).thenReturn(mockRider);
         doAnswer(invocation -> {
             Route routeArg = invocation.getArgument(0);
             Rider riderArg = invocation.getArgument(1);

@@ -1,22 +1,15 @@
 package personal.yejin.foodDelivery.domain.payment.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-
+import org.springframework.web.bind.annotation.*;
 import personal.yejin.foodDelivery.domain.order.dto.OrderPaymentRequest;
 import personal.yejin.foodDelivery.domain.order.dto.OrderPaymentResponse;
+import personal.yejin.foodDelivery.domain.order.model.OrderStatus;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountDetails;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewRequest;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewResponse;
-import personal.yejin.foodDelivery.domain.order.dto.*;
-import personal.yejin.foodDelivery.domain.order.model.OrderStatus;
 
 import java.time.LocalDateTime;
-
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/payment")
@@ -36,6 +29,7 @@ public class PaymentController {
         );
         return ResponseEntity.ok(fakeResponse);
     }
+
     @PostMapping("/{orderId}")
     public ResponseEntity<OrderPaymentResponse> processPayment(
             @PathVariable Long orderId,

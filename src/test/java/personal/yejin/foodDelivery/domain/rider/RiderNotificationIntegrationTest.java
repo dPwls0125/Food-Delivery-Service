@@ -71,7 +71,7 @@ public class RiderNotificationIntegrationTest {
         StepVerifier.create(notificationStream)
                 .assertNext(event -> {
                     log.info(">>> [PHASE 1] Received Connection Event: {}", event);
-                    assertThat(event).contains("riderId=1");
+                    assertThat(event).contains("riderId=" + riderId);
                 })
                 .then(() -> {
                     log.info(">>> [ACTION] Triggering Dispatch Request");

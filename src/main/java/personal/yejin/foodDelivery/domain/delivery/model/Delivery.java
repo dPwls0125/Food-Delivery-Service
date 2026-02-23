@@ -44,8 +44,8 @@ public class Delivery extends GlobalEntity {
 
     public void dispatch(Route route) {
         this.route = route;
-        this.setRider(route.getRider()); // Use the dedicated setRider method
-        this.updateStatus(DeliveryStatus.DISPATCHED); // Use the dedicated updateStatus method
+        this.setRider(route.getRider());
+        this.updateStatus(DeliveryStatus.DISPATCHED);
     }
 
     public Delivery(Order order, DeliveryType deliveryType) {

@@ -28,7 +28,7 @@ public class RiderController {
 
     @PostMapping("/{riderId}/location")
     public ResponseEntity<RiderLocationResponse> updateRiderLocation(@PathVariable Long riderId, @RequestBody RiderLocationRequest request) {
-        RiderLocationResponse data = riderService.getRiderLocation(riderId);
+        RiderLocationResponse data = riderService.updateRiderLocation(riderId, request.latitude(), request.longitude());
         return ResponseEntity.created(URI.create("/api/riders/" + riderId + "/location"))
                 .body(data);
     }

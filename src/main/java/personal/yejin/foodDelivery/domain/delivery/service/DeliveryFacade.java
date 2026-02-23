@@ -71,7 +71,7 @@ public class DeliveryFacade {
     public Optional<Delivery> createSingleDelivery(Delivery delivery) {
         Route route = routeService.createSingleRoute(delivery);
         Stop startPoint = (route.getStartLocation());
-        Rider riderOptimal = riderService.assignRider(startPoint.getLocation());
+        Rider riderOptimal = riderService.assignRiderOptimized(startPoint.getLocation());
         return Optional.of(deliveryService.dispatchSingle(route, riderOptimal, delivery));
     }
 
@@ -89,7 +89,7 @@ public class DeliveryFacade {
         Delivery delivery2 = candidateOpt.get();
         Route route = routeService.getOptimalRouteWithoutRider(delivery1, delivery2);
         Stop startPoint = route.getStartLocation();
-        Rider riderOptimal = riderService.assignRider(startPoint.getLocation());
+        Rider riderOptimal = riderService.assignRiderOptimized(startPoint.getLocation());
 
         return Optional.of(deliveryService.dispatchBundle(route, riderOptimal, delivery1, delivery2));
     }

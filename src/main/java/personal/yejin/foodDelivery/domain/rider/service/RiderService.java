@@ -60,6 +60,7 @@ public class RiderService {
     }
 
     @Transactional
+    @Deprecated
     public Rider assignRider(Location startLocation) {
         Rider optimalRider = riderRepository
                 .findByStatusWithLock(RiderStatus.READY)
