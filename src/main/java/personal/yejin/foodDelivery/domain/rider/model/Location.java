@@ -9,12 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
-/**
- * Haversine formula to calculate distance between two lat/lon points
- *
- * @return distance in kilometers
- * 지구 곡률을 반영하여 계산하는 공식
- */
 public class Location {
     private double latitude;  // 위도
     private double longitude; // 경도

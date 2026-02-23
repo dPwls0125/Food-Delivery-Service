@@ -15,8 +15,8 @@ import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Comparator;
+import java.util.List;
 
 @Slf4j
 @Service

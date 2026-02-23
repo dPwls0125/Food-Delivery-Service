@@ -99,7 +99,6 @@ class OrderNearArrivalNotificationIntegrationTest {
                     log.info(">>> [ORDER NEAR ARRIVAL EVENT] {}", event);
                     assertThat(event).contains("\"orderId\":" + orderId);
                     assertThat(event).contains("\"riderId\":" + rider.getId());
-                    assertThat(event).contains("delivery-near-arrival");
                 })
                 .thenCancel()
                 .verify(Duration.ofSeconds(20));

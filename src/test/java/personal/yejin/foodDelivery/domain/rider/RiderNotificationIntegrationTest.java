@@ -91,6 +91,7 @@ public class RiderNotificationIntegrationTest {
                     log.info(">>> [PHASE 2] Received Dispatch Notification: {}", event);
                     assertThat(event).contains("\"orderId\":" + orderId);
                     assertThat(event).contains("\"riderId\":" + riderId);
+                    assertThat(event).contains("라이더가 곧 도착합니다.");
                 })
                 .thenCancel()
                 .verify(Duration.ofSeconds(15));
