@@ -1,12 +1,8 @@
 package personal.yejin.foodDelivery.domain.delivery.service;
 
-import java.util.Comparator;
-import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.RequiredArgsConstructor;
 import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
@@ -15,10 +11,12 @@ import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.route.model.Route;
 
+import java.util.Comparator;
+import java.util.Optional;
+
 
 @RequiredArgsConstructor
 @Service
-@Transactional(readOnly = true) // 클래스 레벨에 readOnly 트랜잭션 적용
 public class DeliveryService {
 	private static final double BUNDLE_RADIUS_KM = 2.0;
 
@@ -29,6 +27,7 @@ public class DeliveryService {
 			&& delivery.getStatus() == DeliveryStatus.PENDING;
 	}
 
+	@Transactional
 	public Delivery updateDeliveryStatus(Long deliveryId, DeliveryStatus status) {
 		Delivery delivery = deliveryRepository.findById(deliveryId)
 			.orElseThrow(() -> new IllegalArgumentException("Delivery not found with id: " + deliveryId));
