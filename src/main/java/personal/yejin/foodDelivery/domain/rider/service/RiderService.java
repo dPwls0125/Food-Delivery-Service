@@ -50,6 +50,7 @@ public class RiderService {
             if (delivery.isNearArrivalNotified()) {
                 continue;
             }
+
             Location destination = delivery.getOrder().getDeliveryLocation();
             double distanceKm = rider.getLocation().calculateDistanceInHaversineFormula(destination);
 
@@ -100,12 +101,7 @@ public class RiderService {
         LocalDateTime lastUpdatedAt = rider.getUpdatedAt();
 
         if (location == null) {
-            return new RiderLocationResponse(
-                    rider.getId(),
-                    0.0,
-                    0.0,
-                    lastUpdatedAt
-            );
+            throw new IllegalArgumentException("장소 정보가 존재하지 않습니다.");
         }
 
         return new RiderLocationResponse(
@@ -146,7 +142,6 @@ public class RiderService {
                         startLocation.getLongitude(),
                         minLat, maxLat, minLon, maxLon)
                 .orElseThrow(() -> new IllegalStateException("주변 5km 이내에 배차 가능한 Rider가 존재하지 않습니다."));
-
         optimalRider.setStatus(RiderStatus.DISPATCHED);
         return optimalRider;
     }
