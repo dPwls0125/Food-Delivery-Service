@@ -17,7 +17,7 @@ import java.util.List;
 @SuperBuilder
 public class Route extends GlobalEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rider_id")
     private Rider rider;
 

@@ -2,6 +2,7 @@ package personal.yejin.foodDelivery.domain.rider.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
@@ -17,13 +18,13 @@ import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RiderService {
     private static final double NEAR_ARRIVAL_THRESHOLD_KM = 0.5;
-
     private final RiderRepository riderRepository;
     private final DeliveryRepository deliveryRepository;
     private final OrderDeliveryNotificationService orderDeliveryNotificationService;
@@ -32,10 +33,8 @@ public class RiderService {
     public RiderLocationResponse updateRiderLocation(Long riderId, double latitude, double longitude) {
         Rider rider = riderRepository.findById(riderId)
                 .orElseThrow(() -> new IllegalArgumentException("라이더 아이디가 존재하지 않습니다." + riderId));
-
         rider.updateLocation(latitude, longitude);
-        notifyNearArrivalIfNeeded(rider);
-
+        notifyNearArrivalIfNeededAsync(rider);
         return new RiderLocationResponse(
                 rider.getId(),
                 rider.getLocation().getLatitude(),
@@ -44,23 +43,51 @@ public class RiderService {
         );
     }
 
-    private void notifyNearArrivalIfNeeded(Rider rider) {
-        List<Delivery> activeDeliveries = deliveryRepository.findByRiderIdAndStatusIn(
-                rider.getId(),
-                List.of(DeliveryStatus.DISPATCHED, DeliveryStatus.PICKED_UP)
-        );
+    private void notifyNearArrivalIfNeededAsync(Rider rider) {
+        List<Delivery> activeDeliveries = getActiveDeliveries(rider.getId());
 
         for (Delivery delivery : activeDeliveries) {
             if (delivery.isNearArrivalNotified()) {
                 continue;
             }
-
             Location destination = delivery.getOrder().getDeliveryLocation();
             double distanceKm = rider.getLocation().calculateDistanceInHaversineFormula(destination);
 
             if (distanceKm <= NEAR_ARRIVAL_THRESHOLD_KM) {
-                orderDeliveryNotificationService.notifyNearArrival(delivery, distanceKm);
                 delivery.markNearArrivalNotified();
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        orderDeliveryNotificationService.notifyNearArrival(delivery, distanceKm);
+                    } catch (Exception e) {
+                        log.error("배달 근점 알림 비동기 전송 중 에러 발생: deliveryId={}", delivery.getId(), e);
+                    }
+                });
+            }
+        }
+    }
+
+    @Cacheable(value = "activateDeliveries", key = "#riderId")
+    public List<Delivery> getActiveDeliveries(Long riderId) {
+        return deliveryRepository.findByRiderIdAndStatusIn(
+                riderId,
+                List.of(DeliveryStatus.DISPATCHED, DeliveryStatus.PICKED_UP)
+        );
+    }
+
+    private void notifyNearArrivalIfNeeded(Rider rider) {
+
+        List<Delivery> activeDeliveries = getActiveDeliveries(rider.getId());
+
+        for (Delivery delivery : activeDeliveries) {
+            if (delivery.isNearArrivalNotified()) {
+                continue;
+            }
+            Location destination = delivery.getOrder().getDeliveryLocation();
+            double distanceKm = rider.getLocation().calculateDistanceInHaversineFormula(destination);
+
+            if (distanceKm <= NEAR_ARRIVAL_THRESHOLD_KM) {
+                delivery.markNearArrivalNotified();
+                orderDeliveryNotificationService.notifyNearArrival(delivery, distanceKm);
             }
         }
     }
@@ -104,7 +131,6 @@ public class RiderService {
         optimalRider.setStatus(RiderStatus.DISPATCHED);
         return optimalRider;
     }
-
 
     @Transactional
     public Rider assignRiderOptimized(Location startLocation) {
