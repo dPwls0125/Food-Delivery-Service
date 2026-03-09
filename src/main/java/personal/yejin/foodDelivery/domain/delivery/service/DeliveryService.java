@@ -8,9 +8,13 @@ import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
 import personal.yejin.foodDelivery.domain.delivery.model.DeliveryType;
 import personal.yejin.foodDelivery.domain.delivery.repository.DeliveryRepository;
+import personal.yejin.foodDelivery.domain.order.service.DelayCompensationCouponService;
 import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.route.model.Route;
+import personal.yejin.foodDelivery.domain.route.model.StopType;
+
+import java.time.LocalDateTime;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -22,6 +26,7 @@ public class DeliveryService {
     private static final double BUNDLE_RADIUS_KM = 2.0;
     private final DeliveryRepository deliveryRepository;
     private final CacheManager cacheManager;
+    private final DelayCompensationCouponService delayCompensationCouponService;
 
     public boolean isBundleEligible(Delivery delivery) {
         return delivery.getDeliveryType() == DeliveryType.BUNDLE
@@ -33,8 +38,24 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new IllegalArgumentException("Delivery not found with id: " + deliveryId));
         delivery.updateStatus(status);
+        if (status == DeliveryStatus.PICKED_UP && isDeliveryTimeExceeded(delivery, LocalDateTime.now())) {
+            delayCompensationCouponService.issueForDelayedDelivery(delivery.getOrder().getId());
+        }
         cacheManager.getCache("activateDeliveries").evict(delivery.getRider().getId());
         return delivery;
+    }
+
+    private boolean isDeliveryTimeExceeded(Delivery delivery, LocalDateTime now) {
+        if (delivery.getRoute() == null || delivery.getRoute().getStops() == null) {
+            return false;
+        }
+
+        return delivery.getRoute().getStops().stream()
+                .filter(stop -> stop.getDelivery() != null && stop.getDelivery().getId().equals(delivery.getId()))
+                .filter(stop -> stop.getType() == StopType.DELIVERY)
+                .map(stop -> stop.getEstimatedTime())
+                .filter(estimatedTime -> estimatedTime != null)
+                .anyMatch(now::isAfter);
     }
 
     @Transactional
