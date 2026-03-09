@@ -10,6 +10,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import personal.yejin.foodDelivery.domain.rider.controller.RiderController;
 import personal.yejin.foodDelivery.domain.rider.dto.RiderLocationRequest;
 
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,11 +27,19 @@ public class RiderControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private personal.yejin.foodDelivery.domain.rider.service.RiderService riderService;
+
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private personal.yejin.foodDelivery.domain.rider.service.RiderDispatchNotificationService riderDispatchNotificationService;
+
     @Test
     @DisplayName("라이더 위치 조회 API 테스트")
     void testGetRiderLocation() throws Exception {
         // given
         long riderId = 5001L;
+        personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse mockResponse = new personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse(riderId, 37.498095, 127.027610, java.time.LocalDateTime.now());
+        when(riderService.getRiderLocation(riderId)).thenReturn(mockResponse);
 
         // when & then
         mockMvc.perform(get("/riders/" + riderId + "/location"))
@@ -49,6 +60,8 @@ public class RiderControllerTest {
         // given
         long riderId = 5001L;
         RiderLocationRequest request = new RiderLocationRequest(37.498095, 127.027610);
+        personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse mockResponse = new personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse(riderId, 37.498095, 127.027610, java.time.LocalDateTime.now());
+        when(riderService.updateRiderLocation(eq(riderId), anyDouble(), anyDouble())).thenReturn(mockResponse);
 
         // when & then
         mockMvc.perform(post("/riders/" + riderId + "/location")

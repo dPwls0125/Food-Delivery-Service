@@ -10,7 +10,7 @@ import personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse;
 import personal.yejin.foodDelivery.domain.rider.service.RiderDispatchNotificationService;
 import personal.yejin.foodDelivery.domain.rider.service.RiderService;
 
-import java.net.URI;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/riders")
@@ -29,13 +29,50 @@ public class RiderController {
     @PostMapping("/{riderId}/location")
     public ResponseEntity<RiderLocationResponse> updateRiderLocation(@PathVariable Long riderId, @RequestBody RiderLocationRequest request) {
         RiderLocationResponse data = riderService.updateRiderLocation(riderId, request.latitude(), request.longitude());
-        return ResponseEntity.created(URI.create("/api/riders/" + riderId + "/location"))
-                .body(data);
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(data);
     }
 
     @GetMapping(path = "/{riderId}/notifications/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@PathVariable Long riderId) {
         return riderDispatchNotificationService.subscribeRiderNotification(riderId);
+    }
+
+    @PostMapping("/test")
+    public CompletableFuture<String> test() {
+
+        System.out.println("Controller thread = " + Thread.currentThread().getName());
+
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("Async thread = " + Thread.currentThread().getName());
+            return "done";
+        });
+    }
+
+
+    @PostMapping("/join-test")
+    public String joinTest() {
+        System.out.println("Controller thread (start) = " + Thread.currentThread().getName());
+
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+            System.out.println("Async thread = " + Thread.currentThread().getName());
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {}
+            return "done";
+        });
+
+        System.out.println("Controller thread (before join) = " + Thread.currentThread().getName());
+
+        String result = future.join();
+
+        System.out.println("Controller thread (after join) = " + Thread.currentThread().getName());
+
+        return result;
     }
 
 }
