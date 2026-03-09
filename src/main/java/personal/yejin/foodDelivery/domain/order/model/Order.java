@@ -53,16 +53,4 @@ public class Order extends GlobalEntity {
     private OrderStatus orderStatus;
 
     private String customerNote; // 상세 조회 API에 포함된 고객 요청
-
-    public void addOrderItem(OrderItem orderItem) {
-        orderItems.add(orderItem);
-        orderItem.setOrder(this);
-    }
-
-    public void setOrderBill(OrderBill orderBill) {
-        this.orderBill = orderBill;
-        if (orderBill.getOrder() != this) {
-            orderBill.setOrder(this);
-        }
-    }
 }

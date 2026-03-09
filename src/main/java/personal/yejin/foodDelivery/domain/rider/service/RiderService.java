@@ -1,95 +1,148 @@
 package personal.yejin.foodDelivery.domain.rider.service;
 
-import java.time.LocalDateTime;
-import java.util.Comparator;
-
-import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import personal.yejin.foodDelivery.domain.delivery.model.Delivery;
+import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
+import personal.yejin.foodDelivery.domain.delivery.repository.DeliveryRepository;
+import personal.yejin.foodDelivery.domain.order.service.OrderDeliveryNotificationService;
 import personal.yejin.foodDelivery.domain.rider.dto.RiderLocationResponse;
 import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RiderService {
+    private static final double NEAR_ARRIVAL_THRESHOLD_KM = 0.5;
+    private final RiderRepository riderRepository;
+    private final DeliveryRepository deliveryRepository;
+    private final OrderDeliveryNotificationService orderDeliveryNotificationService;
 
-	private final RiderRepository riderRepository;
+    @Transactional
+    public RiderLocationResponse updateRiderLocation(Long riderId, double latitude, double longitude) {
+        Rider rider = riderRepository.findById(riderId)
+                .orElseThrow(() -> new IllegalArgumentException("라이더 아이디가 존재하지 않습니다." + riderId));
+        rider.updateLocation(latitude, longitude);
+        notifyNearArrivalIfNeededAsync(rider);
+        return new RiderLocationResponse(
+                rider.getId(),
+                rider.getLocation().getLatitude(),
+                rider.getLocation().getLongitude(),
+                rider.getUpdatedAt()
+        );
+    }
 
-	public RiderLocationResponse updateRiderLocation(Long riderId, double latitude, double longitude) {
-		Rider rider = riderRepository.findById(riderId)
-			.orElseThrow(() -> new IllegalArgumentException("라이더 아이디가 존재하지 않습니다." + riderId));
+    private void notifyNearArrivalIfNeededAsync(Rider rider) {
+        List<Delivery> activeDeliveries = getActiveDeliveries(rider.getId());
 
-		rider.updateLocation(latitude, longitude);
-		riderRepository.save(rider); // Uncommented for mock verification
+        for (Delivery delivery : activeDeliveries) {
+            if (delivery.isNearArrivalNotified()) {
+                continue;
+            }
 
-		return new RiderLocationResponse(
-			rider.getId(),
-			rider.getLocation().getLatitude(),
-			rider.getLocation().getLongitude(),
-			rider.getUpdatedAt() // Use updated time from rider entity
-		);
-	}
+            Location destination = delivery.getOrder().getDeliveryLocation();
+            double distanceKm = rider.getLocation().calculateDistanceInHaversineFormula(destination);
 
-	public RiderLocationResponse getRiderLocation(Long riderId) {
-		Rider rider = riderRepository.findById(riderId)
-			.orElseThrow(() -> new IllegalArgumentException("라이더 아이디가 존재하지 않습니다." + riderId));
+            if (distanceKm <= NEAR_ARRIVAL_THRESHOLD_KM) {
+                delivery.markNearArrivalNotified();
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        orderDeliveryNotificationService.notifyNearArrival(delivery, distanceKm);
+                    } catch (Exception e) {
+                        log.error("배달 근점 알림 비동기 전송 중 에러 발생: deliveryId={}", delivery.getId(), e);
+                    }
+                });
+            }
+        }
+    }
 
-		Location location = rider.getLocation();
-		LocalDateTime lastUpdatedAt = rider.getUpdatedAt(); // Get updated time from rider entity
+    @Cacheable(value = "activateDeliveries", key = "#riderId")
+    public List<Delivery> getActiveDeliveries(Long riderId) {
+        return deliveryRepository.findByRiderIdAndStatusIn(
+                riderId,
+                List.of(DeliveryStatus.DISPATCHED, DeliveryStatus.PICKED_UP)
+        );
+    }
 
-		if (location == null) {
-			return new RiderLocationResponse(
-				rider.getId(),
-				0.0,
-				0.0,
-				lastUpdatedAt // Use updated time from rider entity
-			);
-		}
+    private void notifyNearArrivalIfNeeded(Rider rider) {
 
-		return new RiderLocationResponse(
-			rider.getId(),
-			location.getLatitude(),
-			location.getLongitude(),
-			lastUpdatedAt // Use updated time from rider entity
-		);
-	}
+        List<Delivery> activeDeliveries = getActiveDeliveries(rider.getId());
 
-	public Rider assignRider(Location startLocation) {
-		Rider optimalRider = riderRepository
-			.findByStatus(RiderStatus.READY)
-			.stream()
-			.filter(rider -> rider.getLocation() != null)
-			.min(Comparator.comparingDouble(rider -> {
-				return startLocation.calculateDistanceInHaversineFormula(rider.getLocation());
-			}))
-			.orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다."));
+        for (Delivery delivery : activeDeliveries) {
+            if (delivery.isNearArrivalNotified()) {
+                continue;
+            }
+            Location destination = delivery.getOrder().getDeliveryLocation();
+            double distanceKm = rider.getLocation().calculateDistanceInHaversineFormula(destination);
 
-		optimalRider.setStatus(RiderStatus.DISPATCHED);
-		riderRepository.save(optimalRider); // 상태 변경 후 저장
-		return optimalRider;
-	}
+            if (distanceKm <= NEAR_ARRIVAL_THRESHOLD_KM) {
+                delivery.markNearArrivalNotified();
+                orderDeliveryNotificationService.notifyNearArrival(delivery, distanceKm);
+            }
+        }
+    }
 
-	// DB 쿼리로 최적화된 라이더를 찾는 메서드를 Java 로직으로 변경
-	public Rider assignRiderOptimized(Location startLocation) {
-		log.info("Searching for nearest rider with startLatitude: {}, startLongitude: {}", startLocation.getLatitude(),
-			startLocation.getLongitude());
+    public RiderLocationResponse getRiderLocation(Long riderId) {
+        Rider rider = riderRepository.findById(riderId)
+                .orElseThrow(() -> new IllegalArgumentException("라이더 아이디가 존재하지 않습니다." + riderId));
 
-		// 1. 모든 READY 상태의 라이더를 조회
-		Rider optimalRider = riderRepository.findByStatus(RiderStatus.READY)
-			.stream()
-			.filter(rider -> rider.getLocation() != null) // 위치 정보가 있는 라이더만 필터링
-			.min(Comparator.comparingDouble(rider ->
-				startLocation.calculateDistanceInHaversineFormula(rider.getLocation()))) // Java 코드에서 거리 계산
-			.orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다.")); // 최적 라이더가 없으면 예외 발생
+        Location location = rider.getLocation();
+        LocalDateTime lastUpdatedAt = rider.getUpdatedAt();
 
-		// 2. 최적 라이더의 상태 변경 및 저장
-		optimalRider.setStatus(RiderStatus.DISPATCHED);
-		riderRepository.save(optimalRider);
-		return optimalRider;
-	}
+        if (location == null) {
+            throw new IllegalArgumentException("장소 정보가 존재하지 않습니다.");
+        }
+
+        return new RiderLocationResponse(
+                rider.getId(),
+                location.getLatitude(),
+                location.getLongitude(),
+                lastUpdatedAt
+        );
+    }
+
+    @Transactional
+    @Deprecated
+    public Rider assignRider(Location startLocation) {
+        Rider optimalRider = riderRepository
+                .findByStatusWithLock(RiderStatus.READY)
+                .stream()
+                .filter(rider -> rider.getLocation() != null)
+                .min(Comparator.comparingDouble(rider -> {
+                    return startLocation.calculateDistanceInHaversineFormula(rider.getLocation());
+                }))
+                .orElseThrow(() -> new IllegalStateException("배차 가능한 Rider가 존재하지 않습니다."));
+
+        optimalRider.setStatus(RiderStatus.DISPATCHED);
+        return optimalRider;
+    }
+
+    @Transactional
+    public Rider assignRiderOptimized(Location startLocation) {
+        double range = 0.05; // 약 5km 범위
+        double minLat = startLocation.getLatitude() - range;
+        double maxLat = startLocation.getLatitude() + range;
+        double minLon = startLocation.getLongitude() - range;
+        double maxLon = startLocation.getLongitude() + range;
+
+        Rider optimalRider = riderRepository.findNearestRiderByStatusWithBounds(
+                        RiderStatus.READY.name(),
+                        startLocation.getLatitude(),
+                        startLocation.getLongitude(),
+                        minLat, maxLat, minLon, maxLon)
+                .orElseThrow(() -> new IllegalStateException("주변 5km 이내에 배차 가능한 Rider가 존재하지 않습니다."));
+        optimalRider.setStatus(RiderStatus.DISPATCHED);
+        return optimalRider;
+    }
 }

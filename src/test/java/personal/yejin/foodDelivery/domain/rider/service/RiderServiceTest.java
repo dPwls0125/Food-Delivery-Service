@@ -15,6 +15,8 @@ import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -151,4 +153,25 @@ class RiderServiceTest {
         assertThat(response.latitude()).isEqualTo(0.0); // 기본 위도 확인
         assertThat(response.longitude()).isEqualTo(0.0); // 기본 경도 확인
     }
+
+    @Test
+    void runAsync() throws ExecutionException, InterruptedException {
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            System.out.println("Thread: " + Thread.currentThread().getName());
+        });
+        future.get();
+        System.out.println("Thread: " + Thread.currentThread().getName());
+    }
+
+
+    @Test
+    void supplyAsync() throws ExecutionException, InterruptedException {
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+            return  "Thread:" + Thread.currentThread().getName();
+        });
+        System.out.println(future.get());
+        System.out.println("Thread: " + Thread.currentThread().getName());
+    }
+
+
 }

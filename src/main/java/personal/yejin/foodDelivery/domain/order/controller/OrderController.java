@@ -1,23 +1,17 @@
 package personal.yejin.foodDelivery.domain.order.controller;
 
-import java.net.URI;
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import personal.yejin.foodDelivery.domain.order.dto.OrderCreateRequest;
 import personal.yejin.foodDelivery.domain.order.dto.OrderCreateResponse;
 import personal.yejin.foodDelivery.domain.order.model.OrderStatus;
-import personal.yejin.foodDelivery.domain.rider.dto.RiderOrderDetailResponse;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountDetails;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewRequest;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewResponse;
+import personal.yejin.foodDelivery.domain.rider.dto.RiderOrderDetailResponse;
+
+import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -36,8 +30,6 @@ public class OrderController {
         return ResponseEntity.created(URI.create("/api/orders/" + orderId))
                 .body(response);
     }
-
-
 
 
     @GetMapping("/{orderId}")
@@ -77,6 +69,8 @@ public class OrderController {
                 4500,
                 13500
         );
+
+
         return ResponseEntity.ok(response);
     }
 

@@ -1,8 +1,4 @@
-package personal.yejin.foodDelivery;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
+package personal.yejin.foodDelivery.domain.performance;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,37 +6,40 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
 import personal.yejin.foodDelivery.domain.rider.model.Location;
 import personal.yejin.foodDelivery.domain.rider.model.Rider;
 import personal.yejin.foodDelivery.domain.rider.model.RiderStatus;
 import personal.yejin.foodDelivery.domain.rider.repository.RiderRepository;
 import personal.yejin.foodDelivery.domain.rider.service.RiderService;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 @SpringBootTest
 @Transactional
 public class QueryPerformanceTest {
 
+    private static final int NUMBER_OF_RIDERS = 5000;
+    private static final int NUMBER_OF_RUNS = 100;
     @Autowired
     private RiderService riderService;
-
     @Autowired
     private RiderRepository riderRepository;
-
-    private static final int NUMBER_OF_RIDERS = 5000; // 성능 측정을 위한 라이더 수
-    private static final int NUMBER_OF_RUNS = 10; // 각 메서드를 실행할 횟수
 
     @BeforeEach
     void setUp() {
         riderRepository.deleteAll(); // 기존 데이터 삭제
-
-        // 대량의 Ready 상태 라이더를 DB에 저장
         List<Rider> ridersToSave = new ArrayList<>();
         IntStream.range(0, NUMBER_OF_RIDERS).forEach(i -> {
+            RiderStatus status = RiderStatus.READY;
+            if (i > 2500) {
+                status = RiderStatus.DISPATCHED;
+            }
             ridersToSave.add(Rider.builder()
                     .name("TestLogging Rider " + i)
-                    .location(new Location(37.5 + (i * 0.00001), 127.0 + (i * 0.00001))) // 약간씩 다른 위치
-                    .status(RiderStatus.READY)
+                    .location(new Location(37.5 + (i * 0.00001), 127.0 + (i * 0.00001)))
+                    .status(status)
                     .build());
         });
         riderRepository.saveAll(ridersToSave);
@@ -79,4 +78,5 @@ public class QueryPerformanceTest {
         System.out.printf("Average execution time: %.2f ms\n", averageDuration);
         System.out.println("----------------------------------------");
     }
+
 }
