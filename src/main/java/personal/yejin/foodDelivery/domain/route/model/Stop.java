@@ -22,7 +22,7 @@ public class Stop extends GlobalEntity {
     @JoinColumn(name = "route_id")
     private Route route;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_id")
     private Delivery delivery;
 

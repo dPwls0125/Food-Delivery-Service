@@ -50,11 +50,15 @@ dependencies {
 
 	// JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    testImplementation 'org.projectlombok:lombok:1.18.26'
+	testImplementation 'org.projectlombok:lombok:1.18.26'
 
 	// 보일러플레이트 코드 감소를 위한 Lombok
 	// compileOnly + annotationProcessor 조합으로 런타임 의존성 제거
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 
 	// 실제 운영 DB를 MySQL로 가정
 	// 컴파일 시에는 필요 없으므로 runtimeOnly로 설정
@@ -62,12 +66,19 @@ dependencies {
 
 	// 기본적인 테스트 환경 구성
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+
+	// WebClient/WebTestClient 사용을 위한 WebFlux
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
 	// Spring AOP 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 
 	// mockito
 	testImplementation 'org.mockito:mockito-core:5.5.0'
+
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
 }
 
 // JUnit 5 기반 테스트 실행 설정

@@ -34,9 +34,12 @@ public class Delivery extends GlobalEntity {
     @Column(name = "delivery_type")
     private DeliveryType deliveryType;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "route_id")
     private Route route;
+
+    @Column(name = "near_arrival_notified", nullable = false)
+    private boolean nearArrivalNotified;
 
     public void setRider(Rider rider) {
         this.rider = rider;
@@ -44,17 +47,22 @@ public class Delivery extends GlobalEntity {
 
     public void dispatch(Route route) {
         this.route = route;
-        this.setRider(route.getRider()); // Use the dedicated setRider method
-        this.updateStatus(DeliveryStatus.DISPATCHED); // Use the dedicated updateStatus method
+        this.setRider(route.getRider());
+        this.updateStatus(DeliveryStatus.DISPATCHED);
     }
 
     public Delivery(Order order, DeliveryType deliveryType) {
         this.order = order;
         this.deliveryType = deliveryType;
         this.status = DeliveryStatus.PENDING;
+        this.nearArrivalNotified = false;
     }
 
     public void updateStatus(DeliveryStatus status) {
         this.status = status;
+    }
+
+    public void markNearArrivalNotified() {
+        this.nearArrivalNotified = true;
     }
 }

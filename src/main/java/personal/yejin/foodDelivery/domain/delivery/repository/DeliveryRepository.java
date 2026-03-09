@@ -9,4 +9,6 @@ import personal.yejin.foodDelivery.domain.delivery.model.DeliveryStatus;
 
 public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     List<Delivery> findByIdIsNotAndDeliveryTypeAndStatus(Long id, DeliveryType deliveryType, DeliveryStatus status);
+
+    List<Delivery> findByRiderIdAndStatusIn(Long riderId, List<DeliveryStatus> statuses);
 }
