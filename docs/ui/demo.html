@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛵 FoodDelivery Demo</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --panel: #ffffff;
+      --border: #dde1e7;
+      --accent: #00a86b;
+      --accent2: #f05a28;
+      --accent3: #1a7fc1;
+      --warn: #e6a817;
+      --err: #d93025;
+      --muted: #9aa0ac;
+      --text: #1a1d23;
+      --text2: #4a5060;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    #header {
+      background: #1a7fc1;
+      border-bottom: 1px solid #1568a0;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    #header .logo {
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    #header .status-bar {
+      color: rgba(255,255,255,0.7);
+      font-size: 11px;
+    }
+    #header .status-bar span { color: #ffffff; }
+    #api-status {
+      margin-left: auto;
+      font-size: 11px;
+    }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+    .dot.ok { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+    .dot.err { background: var(--err); }
+    .dot.idle { background: var(--muted); }
+
+    /* ── TAB NAV ── */
+    #tab-nav {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: #ffffff;
+      padding: 0 20px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 1px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent3); border-bottom-color: var(--accent3); }
+    .tab-btn .tab-icon { margin-right: 6px; }
+
+    /* ── LAYOUT ── */
+    #main {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 0;
+      height: calc(100vh - 88px);
+    }
+    #sidebar {
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    #content {
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .panel-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f9fb;
+      border-radius: 8px 8px 0 0;
+    }
+    .panel-title {
+      color: var(--accent3);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+    .panel-body { padding: 12px; }
+
+    /* ── FORM ELEMENTS ── */
+    .field { margin-bottom: 10px; }
+    .field label {
+      display: block;
+      color: var(--text2);
+      font-size: 11px;
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--accent3);
+      box-shadow: 0 0 0 3px rgba(26,127,193,0.12);
+    }
+    .field select option { background: #ffffff; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #009960; box-shadow: 0 2px 8px rgba(0,168,107,0.3); }
+    .btn-warn { background: var(--warn); color: #fff; }
+    .btn-warn:hover:not(:disabled) { background: #cc9414; box-shadow: 0 2px 8px rgba(230,168,23,0.3); }
+    .btn-danger { background: var(--err); color: #fff; }
+    .btn-danger:hover:not(:disabled) { background: #c22a1f; box-shadow: 0 2px 8px rgba(217,48,37,0.3); }
+    .btn-info { background: var(--accent3); color: #fff; }
+    .btn-info:hover:not(:disabled) { background: #1568a0; box-shadow: 0 2px 8px rgba(26,127,193,0.3); }
+    .btn-orange { background: var(--accent2); color: #fff; }
+    .btn-orange:hover:not(:disabled) { background: #d44a1e; box-shadow: 0 2px 8px rgba(240,90,40,0.3); }
+    .btn-sm { padding: 4px 10px; font-size: 11px; }
+    .btn-block { width: 100%; justify-content: center; }
+
+    /* ── STATUS BADGE ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 2px;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      font-weight: bold;
+    }
+    .badge-green { background: #e6f7f1; color: #00895a; border: 1px solid #b3e8d4; }
+    .badge-orange { background: #fef0ea; color: #c94415; border: 1px solid #fac9b3; }
+    .badge-blue { background: #e8f3fb; color: #1568a0; border: 1px solid #b3d4ee; }
+    .badge-yellow { background: #fef8e6; color: #b07d0a; border: 1px solid #f5dfa0; }
+    .badge-red { background: #fdecea; color: #b71c1c; border: 1px solid #f5b4b0; }
+    .badge-muted { background: #f0f2f5; color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── KV ROW ── */
+    .kv { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .kv:last-child { border-bottom: none; }
+    .kv .k { color: var(--text2); }
+    .kv .v { color: var(--text); font-weight: bold; }
+    .kv .v.green { color: var(--accent); }
+    .kv .v.orange { color: var(--accent2); }
+    .kv .v.blue { color: var(--accent3); }
+    .kv .v.yellow { color: var(--warn); }
+
+    /* ── LOG ── */
+    #log-panel {
+      background: #f8f9fb;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px;
+      height: 220px;
+      overflow-y: auto;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+    .log-line { display: flex; gap: 8px; }
+    .log-time { color: var(--muted); flex-shrink: 0; }
+    .log-tag { flex-shrink: 0; font-weight: bold; }
+    .log-tag.ok { color: var(--accent); }
+    .log-tag.err { color: var(--err); }
+    .log-tag.info { color: var(--accent3); }
+    .log-tag.warn { color: var(--warn); }
+    .log-line .log-msg { color: var(--text2); }
+    .log-line .log-time { color: var(--muted); }
+    .log-msg { color: var(--text2); word-break: break-all; }
+
+    /* ── SSE PANEL ── */
+    #sse-panel {
+      background: #f0f6fc;
+      border: 1px solid #b3d4ee;
+      border-radius: 4px;
+      padding: 10px;
+      height: 160px;
+      overflow-y: auto;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+    .sse-event { padding: 3px 0; border-bottom: 1px solid #1a1a1a; }
+    .sse-event-type { color: var(--accent3); font-weight: bold; }
+    .sse-event-data { color: var(--text2); margin-left: 12px; }
+
+    /* ── RIDER CARD ── */
+    .rider-card {
+      background: #f8f9fb;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .rider-card:hover { border-color: var(--accent3); }
+    .rider-card.selected { border-color: var(--accent); background: rgba(0,255,136,0.05); }
+    .rider-card .rider-info { display: flex; flex-direction: column; gap: 3px; }
+    .rider-card .rider-name { font-weight: bold; color: var(--text); }
+    .rider-card .rider-detail { font-size: 11px; color: var(--muted); }
+
+    /* ── MAP ASCII ── */
+    #ascii-map {
+      background: #eef5fb;
+      border: 1px solid #b3d4ee;
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre;
+      font-family: 'Courier New', monospace;
+      color: #4a6070;
+      min-height: 200px;
+    }
+
+    /* ── ORDER ITEMS ── */
+    .order-item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .order-item-row:last-child { border-bottom: none; }
+    .order-item-row input[type="number"] { width: 60px; }
+    .remove-item { background: none; border: 1px solid var(--muted); color: var(--muted); cursor: pointer; padding: 2px 6px; font-family: inherit; border-radius: 2px; }
+    .remove-item:hover { border-color: var(--err); color: var(--err); }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── FLOW STEPS ── */
+    .flow-steps {
+      display: flex;
+      gap: 0;
+      margin-bottom: 12px;
+    }
+    .flow-step {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 11px;
+      color: var(--muted);
+      border-bottom: 3px solid var(--border);
+      position: relative;
+      background: #fff;
+    }
+    .flow-step.done { color: var(--accent); border-bottom-color: var(--accent); background: #f0faf6; }
+    .flow-step.active { color: #b07d0a; border-bottom-color: var(--warn); background: #fffbe6; }
+    .flow-step .step-num {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    /* ── DELIVERY TIMELINE ── */
+    .timeline { padding: 8px 0; }
+    .tl-item {
+      display: flex;
+      gap: 12px;
+      padding: 6px 0;
+    }
+    .tl-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+    .tl-dot.done { background: var(--accent); border-color: var(--accent); }
+    .tl-dot.active { background: var(--warn); border-color: var(--warn); animation: pulse 1s infinite; }
+    .tl-dot.pending { background: transparent; border-color: var(--muted); }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+    .tl-line {
+      position: relative;
+    }
+    .tl-text { font-size: 12px; }
+    .tl-time { font-size: 10px; color: var(--muted); }
+
+    /* ── DISCOUNT TABLE ── */
+    .discount-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 12px;
+      border-bottom: 1px dashed var(--border);
+    }
+    .discount-row:last-child { border-bottom: 2px solid var(--accent3); font-weight: bold; color: var(--accent); }
+    .discount-label { color: var(--text2); }
+    .discount-amount { }
+    .discount-amount.minus { color: var(--accent2); }
+    .discount-amount.total { color: var(--accent); }
+
+    /* ── TABS CONTENT ── */
+    .tab-content { display: none; }
+    .tab-content.active { display: contents; }
+
+    /* ── GRID HELPERS ── */
+    .row { display: flex; gap: 8px; }
+    .row .btn { flex: 1; justify-content: center; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #f0f2f5; }
+    ::-webkit-scrollbar-thumb { background: #c8cdd5; border-radius: 3px; }
+
+    /* ── SEPARATOR ── */
+    .sep { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+
+    /* ── NOTIFICATION TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #ffffff;
+      border: 1px solid var(--accent3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 12px;
+      max-width: 320px;
+      display: none;
+      z-index: 999;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    #toast.show { display: block; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateX(30px); opacity:0; } to { transform: translateX(0); opacity:1; } }
+    #toast .toast-title { color: var(--accent3); font-weight: bold; margin-bottom: 4px; }
+    #toast .toast-body { color: var(--text2); }
+    #toast .toast-close { position: absolute; top: 8px; right: 10px; cursor: pointer; color: var(--muted); font-size:14px; }
+
+    .spinner {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border: 2px solid #dde1e7;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .text-green { color: var(--accent); }
+    .text-orange { color: var(--accent2); }
+    .text-blue { color: var(--accent3); }
+    .text-yellow { color: var(--warn); }
+    .text-muted { color: var(--muted); }
+
+    #live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--err);
+    }
+    #live-indicator .live-dot {
+      width: 6px; height: 6px;
+      background: var(--err);
+      border-radius: 50%;
+      animation: pulse 0.8s infinite;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="logo">▶ DELIVERY SYS</div>
+  <div class="status-bar">
+    BASE_URL: <span id="base-url-display">http://localhost:8080</span>
+  </div>
+  <div id="api-status">
+    <span class="dot idle" id="api-dot"></span>
+    <span id="api-status-text" style="color:var(--muted)">API IDLE</span>
+  </div>
+</div>
+
+<!-- TAB NAV -->
+<div id="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('customer')" id="tab-customer">
+    <span class="tab-icon">🛒</span>CUSTOMER
+  </button>
+  <button class="tab-btn" onclick="switchTab('rider')" id="tab-rider">
+    <span class="tab-icon">🛵</span>RIDER
+  </button>
+  <button class="tab-btn" onclick="switchTab('dispatch')" id="tab-dispatch">
+    <span class="tab-icon">📡</span>DISPATCH
+  </button>
+  <button class="tab-btn" onclick="switchTab('settings')" id="tab-settings">
+    <span class="tab-icon">⚙</span>CONFIG
+  </button>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- ══════════════════ CUSTOMER TAB ══════════════════ -->
+  <div id="view-customer" style="display:contents">
+
+    <!-- SIDEBAR: 주문 생성 -->
+    <div id="sidebar">
+
+      <!-- 주문 진행 단계 -->
+      <div class="flow-steps" id="customer-steps">
+        <div class="flow-step active" id="step-order">
+          <span class="step-num">①</span>ORDER
+        </div>
+        <div class="flow-step" id="step-payment">
+          <span class="step-num">②</span>PAYMENT
+        </div>
+        <div class="flow-step" id="step-dispatch">
+          <span class="step-num">③</span>DISPATCH
+        </div>
+        <div class="flow-step" id="step-track">
+          <span class="step-num">④</span>TRACK
+        </div>
+      </div>
+
+      <!-- 주문 생성 패널 -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📋 주문 생성 — POST /orders</span>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label>STORE ID</label>
+            <input type="number" id="order-store-id" value="1" min="1">
+          </div>
+          <div class="field">
+            <label>DELIVERY ADDRESS</label>
+            <input type="text" id="order-address" value="서울시 강남구 테헤란로 123">
+          </div>
+          <div class="section-title">ORDER ITEMS</div>
+          <div id="order-items-list">
+            <div class="order-item-row">
+              <input type="number" placeholder="menuId" value="1" style="width:70px">
+              <span style="color:var(--muted)">×</span>
+              <input type="number" placeholder="qty" value="2" style="width:50px">
+              <button class="remove-item" onclick="removeItem(this)">✕</button>
+            </div>
+          </div>
+          <button class="btn btn-info btn-sm" onclick="addItem()" style="margin-top:6px; margin-bottom:10px">
+            + 메뉴 추가
+          </button>
+          <div class="field">
+            <label>CUSTOMER NOTE (선택)</label>
+            <input type="text" id="order-note" placeholder="문 앞에 놓아주세요">
+          </div>
+          <button class="btn btn-primary btn-block" onclick="createOrder()">
+            ▶ 주문 생성
+          </button>
+        </div>
+      </div>
+
+      <!-- 결제 패널 -->
+      <div class="panel" id="payment-section" style="opacity:0.4">
+        <div class="panel-header">
+          <span class="panel-title">💳 결제 — POST /payment/{orderId}</span>
+          <span id="payment-order-badge" class="badge badge-muted">ORDER #?</span>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label>COUPON ID (선택, 0=없음)</label>
+            <input type="number" id="coupon-id" value="0" min="0">
+          </div>
+          <div class="field">
+            <label>BAEMIN CLUB</label>
+            <select id="use-baemin-club">
+              <option value="false">사용 안함</option>
+              <option value="true">사용</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>PAYMENT METHOD</label>
+            <select id="payment-method">
+              <option value="CARD">CARD</option>
+              <option value="CASH">CASH</option>
+            </select>
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <button class="btn btn-info" onclick="previewPayment()" id="btn-preview">
+              🔍 미리보기
+            </button>
+          </div>
+          <div id="discount-preview" style="display:none; margin-bottom:10px">
+            <div class="discount-row">
+              <span class="discount-label">음식 금액</span>
+              <span class="discount-amount" id="dp-food">-</span>
+            </div>
+            <div class="discount-row">
+              <span class="discount-label">배달비</span>
+              <span class="discount-amount" id="dp-fee">-</span>
+            </div>
+            <div class="discount-row">
+              <span class="discount-label">쿠폰 할인</span>
+              <span class="discount-amount minus" id="dp-coupon">-</span>
+            </div>
+            <div class="discount-row">
+              <span class="discount-label">배민클럽 할인</span>
+              <span class="discount-amount minus" id="dp-club">-</span>
+            </div>
+            <div class="discount-row">
+              <span class="discount-label">최종 결제금액</span>
+              <span class="discount-amount total" id="dp-total">-</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="processPayment()" id="btn-pay" disabled>
+            💳 결제하기
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CONTENT: 배달 추적 -->
+    <div id="content">
+
+      <!-- 현재 주문 상태 -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📦 현재 주문 상태</span>
+          <div style="display:flex; gap:8px; align-items:center">
+            <span id="order-status-badge" class="badge badge-muted">NO ORDER</span>
+            <button class="btn btn-info btn-sm" onclick="refreshOrderStatus()" id="btn-refresh-order">
+              ↻ 새로고침
+            </button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="order-detail-empty" style="color:var(--muted); text-align:center; padding:20px">
+            주문을 먼저 생성하세요
+          </div>
+          <div id="order-detail-content" style="display:none">
+            <div class="kv"><span class="k">Order ID</span><span class="v blue" id="d-order-id">-</span></div>
+            <div class="kv"><span class="k">Status</span><span class="v" id="d-order-status">-</span></div>
+            <div class="kv"><span class="k">Store ID</span><span class="v" id="d-store-id">-</span></div>
+            <div class="kv"><span class="k">Delivery Address</span><span class="v" id="d-address">-</span></div>
+            <div class="kv"><span class="k">Total Price</span><span class="v green" id="d-price">-</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 배달 추적 타임라인 -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">🗺 배달 추적 타임라인</span>
+          <div id="live-indicator" style="display:none">
+            <span class="live-dot"></span> LIVE
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="timeline" id="delivery-timeline">
+            <div class="tl-item">
+              <div class="tl-dot" id="tl-created"></div>
+              <div class="tl-text">
+                <div>주문 생성</div>
+                <div class="tl-time" id="tl-created-time">-</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" id="tl-paid"></div>
+              <div class="tl-text">
+                <div>결제 완료</div>
+                <div class="tl-time" id="tl-paid-time">대기중</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" id="tl-dispatched"></div>
+              <div class="tl-text">
+                <div>라이더 배차 완료</div>
+                <div class="tl-time" id="tl-dispatched-time">대기중</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" id="tl-pickedup"></div>
+              <div class="tl-text">
+                <div>픽업 완료 (라이더 수령)</div>
+                <div class="tl-time" id="tl-pickedup-time">대기중</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" id="tl-neararrival"></div>
+              <div class="tl-text">
+                <div>라이더 근처 도착 (0.5km 이내)</div>
+                <div class="tl-time" id="tl-neararrival-time">대기중</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" id="tl-delivered"></div>
+              <div class="tl-text">
+                <div>배달 완료</div>
+                <div class="tl-time" id="tl-delivered-time">대기중</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SSE 알림 패널 -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📡 실시간 알림 — GET /orders/{id}/notifications/subscribe</span>
+          <div style="display:flex; gap:6px">
+            <button class="btn btn-info btn-sm" onclick="subscribeOrderSSE()" id="btn-sse-subscribe">
+              ▶ SSE 구독
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="unsubscribeOrderSSE()" id="btn-sse-unsubscribe" disabled>
+              ■ 구독 해제
+            </button>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:8px">
+          <div id="sse-panel">
+            <div class="text-muted" style="padding:4px">SSE 구독 대기중...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 로그 -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📜 API LOG</span>
+          <button class="btn btn-danger btn-sm" onclick="clearLog()">CLEAR</button>
+        </div>
+        <div class="panel-body" style="padding:8px">
+          <div id="log-panel"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════ RIDER TAB ══════════════════ -->
+  <div id="view-rider" style="display:none; grid-column: 1/-1">
+    <div style="display:grid; grid-template-columns: 320px 1fr 320px; height:100%; gap:0">
+
+      <!-- LEFT: 라이더 설정 -->
+      <div style="border-right:1px solid var(--border); padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px">
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🛵 라이더 식별</span>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label>RIDER ID</label>
+              <input type="number" id="rider-id" value="1" min="1">
+            </div>
+            <div class="row">
+              <button class="btn btn-info" onclick="getRiderLocation()">📍 위치 조회</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 위치 업데이트 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📍 위치 업데이트 — POST /riders/{id}/location</span>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label>LATITUDE (위도)</label>
+              <input type="number" id="rider-lat" value="37.498095" step="0.0001">
+            </div>
+            <div class="field">
+              <label>LONGITUDE (경도)</label>
+              <input type="number" id="rider-lng" value="127.028697" step="0.0001">
+            </div>
+            <div class="section-title" style="margin-top:4px">빠른 위치 선택</div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px">
+              <button class="btn btn-sm btn-orange" onclick="setLocation(37.5048,127.0484)">🏪 가게</button>
+              <button class="btn btn-sm btn-orange" onclick="setLocation(37.5010,127.0400)">📍 중간</button>
+              <button class="btn btn-sm btn-primary" onclick="setLocation(37.4981,127.0287)">🏠 고객</button>
+              <button class="btn btn-sm btn-warn" onclick="setLocation(37.4986,127.0290)">⚡ 근접(0.3km)</button>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="updateRiderLocation()">
+              ▶ 위치 업데이트
+            </button>
+          </div>
+        </div>
+
+        <!-- 배달 상태 업데이트 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🔄 배달 상태 업데이트 — POST /deliveries/{id}/status</span>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label>DELIVERY ID</label>
+              <input type="number" id="delivery-id-input" value="" placeholder="배차 후 자동 입력">
+            </div>
+            <div class="field">
+              <label>STATUS</label>
+              <select id="delivery-status-select">
+                <option value="DISPATCHED">DISPATCHED (배차완료)</option>
+                <option value="PICKED_UP">PICKED_UP (픽업완료)</option>
+                <option value="DELIVERED">DELIVERED (배달완료)</option>
+                <option value="CANCEL">CANCEL (취소)</option>
+              </select>
+            </div>
+            <button class="btn btn-warn btn-block" onclick="updateDeliveryStatus()">
+              ▶ 상태 업데이트
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CENTER: 라이더 현황 -->
+      <div style="border-right:1px solid var(--border); padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px">
+
+        <!-- 현재 위치 정보 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📍 현재 위치 정보</span>
+          </div>
+          <div class="panel-body" id="rider-location-info">
+            <div style="color:var(--muted); text-align:center; padding:10px">위치 조회 버튼을 누르세요</div>
+          </div>
+        </div>
+
+        <!-- ASCII 지도 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🗺 위치 시각화 (ASCII MAP)</span>
+            <span style="font-size:10px; color:var(--muted)">강남구 기준</span>
+          </div>
+          <div class="panel-body" style="padding:8px">
+            <div id="ascii-map">지도 로딩 중...</div>
+            <div style="margin-top:6px; font-size:10px; color:var(--muted)">
+              <span style="color:var(--accent2)">■</span> 가게
+              <span style="color:var(--accent)">●</span> 고객
+              <span style="color:var(--accent3)">▲</span> 라이더
+              <span style="color:var(--warn)">★</span> 라이더(근접)
+            </div>
+          </div>
+        </div>
+
+        <!-- 현재 배달 경로 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🛣 현재 배달 경로 — GET /routes/me/current-route</span>
+            <button class="btn btn-info btn-sm" onclick="getCurrentRoute()">조회</button>
+          </div>
+          <div class="panel-body" id="route-content">
+            <div style="color:var(--muted); text-align:center; padding:10px">경로 정보 없음</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: 라이더 알림 -->
+      <div style="padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px">
+
+        <!-- 배차 알림 구독 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📡 배차 알림 구독 — SSE</span>
+          </div>
+          <div class="panel-body">
+            <div style="font-size:11px; color:var(--muted); margin-bottom:8px">
+              GET /riders/{id}/notifications/subscribe
+            </div>
+            <div class="row" style="margin-bottom:8px">
+              <button class="btn btn-info" onclick="subscribeRiderSSE()" id="btn-rider-sse-sub">▶ 구독</button>
+              <button class="btn btn-danger" onclick="unsubscribeRiderSSE()" id="btn-rider-sse-unsub" disabled>■ 해제</button>
+            </div>
+            <div id="rider-sse-panel" style="background:#f0f6fc; border:1px solid #b3d4ee; border-radius:4px; padding:10px; height:180px; overflow-y:auto; font-size:11px; line-height:1.7">
+              <div class="text-muted">배차 알림 대기중...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 현재 배달 현황 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📋 현재 배달 현황</span>
+          </div>
+          <div class="panel-body" id="rider-delivery-status">
+            <div class="kv"><span class="k">Delivery ID</span><span class="v blue" id="r-delivery-id">-</span></div>
+            <div class="kv"><span class="k">Order ID</span><span class="v" id="r-order-id">-</span></div>
+            <div class="kv"><span class="k">Delivery Type</span><span class="v" id="r-delivery-type">-</span></div>
+            <div class="kv"><span class="k">Status</span><span class="v" id="r-status">-</span></div>
+            <div class="kv"><span class="k">Rider Status</span><span class="v" id="r-rider-status">READY</span></div>
+          </div>
+        </div>
+
+        <!-- 라이더 로그 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📜 RIDER LOG</span>
+            <button class="btn btn-danger btn-sm" onclick="clearRiderLog()">CLEAR</button>
+          </div>
+          <div class="panel-body" style="padding:8px">
+            <div id="rider-log-panel" style="background:#f8f9fb; border:1px solid var(--border); border-radius:4px; padding:10px; height:200px; overflow-y:auto; font-size:11px; line-height:1.7"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ DISPATCH TAB ══════════════════ -->
+  <div id="view-dispatch" style="display:none; grid-column: 1/-1">
+    <div style="display:grid; grid-template-columns: 360px 1fr; height:100%; gap:0">
+
+      <!-- LEFT: 배차 요청 -->
+      <div style="border-right:1px solid var(--border); padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px">
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🚀 배차 요청 — POST /deliveries/{orderId}/dispatch</span>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label>ORDER ID</label>
+              <input type="number" id="dispatch-order-id" placeholder="결제 완료 주문 ID">
+            </div>
+            <div class="field">
+              <label>DELIVERY TYPE</label>
+              <select id="dispatch-type">
+                <option value="SINGLE">SINGLE (단건 배달)</option>
+                <option value="BUNDLE">BUNDLE (묶음 배달)</option>
+              </select>
+            </div>
+            <div style="background:#f0f6fc; border:1px solid #b3d4ee; border-radius:6px; padding:10px; margin-bottom:10px; font-size:11px; color:var(--text2)">
+              <div style="color:var(--accent3); margin-bottom:4px; font-weight:bold">ℹ DISPATCH LOGIC</div>
+              <div>• SINGLE: 가장 가까운 READY 라이더 자동 배정</div>
+              <div>• BUNDLE: 이미 DISPATCHED 라이더와 묶음 시도</div>
+              <div>• 검색 범위: 반경 5km 내 라이더</div>
+              <div>• 라이더 없을 시: 503 반환</div>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="requestDispatch()" id="btn-dispatch">
+              🚀 배차 요청
+            </button>
+          </div>
+        </div>
+
+        <!-- 배차 결과 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">✅ 배차 결과</span>
+          </div>
+          <div class="panel-body" id="dispatch-result">
+            <div style="color:var(--muted); text-align:center; padding:10px">배차 요청 후 결과 표시</div>
+          </div>
+        </div>
+
+        <!-- 주문 상세 조회 (라이더용) -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📋 주문 상세 — GET /orders/{orderId}</span>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label>ORDER ID</label>
+              <input type="number" id="detail-order-id" placeholder="조회할 주문 ID">
+            </div>
+            <button class="btn btn-info btn-block" onclick="getOrderDetail()">조회</button>
+            <div id="order-detail-result" style="margin-top:10px; display:none">
+              <hr class="sep">
+              <div id="order-detail-data"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: 전체 흐름 다이어그램 + 배차 로그 -->
+      <div style="padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px">
+
+        <!-- 서비스 흐름 다이어그램 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📊 배차 서비스 흐름도</span>
+          </div>
+          <div class="panel-body">
+            <pre style="color:#4a5060; font-size:11px; line-height:1.6; overflow-x:auto; background:#f8f9fb; padding:12px; border-radius:6px; border:1px solid var(--border)">
+<span class="text-blue">┌─────────────────────────────────────────────────────────────────────┐</span>
+<span class="text-blue">│                     RIDER DISPATCH FLOW                             │</span>
+<span class="text-blue">└─────────────────────────────────────────────────────────────────────┘</span>
+
+  <span class="text-green">[CUSTOMER]</span>              <span class="text-orange">[STORE/SYSTEM]</span>              <span class="text-blue">[RIDER]</span>
+
+  POST /orders              │                          GET /riders/{id}
+  ┌──────────┐              │                       /notifications/subscribe
+  │  주문생성  │              │                        ┌──────────────┐
+  └────┬─────┘              │                        │  SSE 구독 대기  │
+       │                    │                        └──────┬───────┘
+  POST /payment/{id}        │                               │
+  ┌──────────┐              │                               │
+  │   결제    │              │                               │
+  └────┬─────┘              │                               │
+       │                    │                               │
+  POST /deliveries/{id}     │                               │
+       /dispatch             │                               │
+  ┌──────────────────────┐  │    <span class="text-orange">dispatch-assigned</span> event │
+  │ 배차 요청              │──┼──────────────────────────────▶│
+  │ (SINGLE or BUNDLE)   │  │                        ┌──────────────┐
+  └──────────────────────┘  │                        │  배차 알림 수신 │
+                             │                        └──────┬───────┘
+  GET /orders/{id}           │                               │
+  /notifications/subscribe   │                        POST /riders/{id}/location
+  ┌──────────┐              │                        ┌──────────────┐
+  │ SSE 구독  │              │                        │ 실시간 위치 업데이트 │
+  └────┬─────┘              │                        └──────┬───────┘
+       │                    │                               │
+       │      <span class="text-warn">delivery-near-arrival</span> event (0.5km)        │
+       │◀───────────────────┼───────────────────────────────┤
+  ┌──────────┐              │                        POST /deliveries/{id}/status
+  │ 근접 알림 수신 │           │                        ┌──────────────┐
+  └──────────┘              │                        │ PICKED_UP → DELIVERED │
+                             │                        └──────────────┘
+            </pre>
+          </div>
+        </div>
+
+        <!-- 배차 로그 -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📜 DISPATCH LOG</span>
+            <button class="btn btn-danger btn-sm" onclick="clearDispatchLog()">CLEAR</button>
+          </div>
+          <div class="panel-body" style="padding:8px">
+            <div id="dispatch-log-panel" style="background:#f8f9fb; border:1px solid var(--border); border-radius:4px; padding:10px; height:200px; overflow-y:auto; font-size:11px; line-height:1.7"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ SETTINGS TAB ══════════════════ -->
+  <div id="view-settings" style="display:none; grid-column:1/-1">
+    <div style="max-width:480px; margin:40px auto; padding:16px; display:flex; flex-direction:column; gap:14px">
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">⚙ API CONFIG</span>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label>BASE URL</label>
+            <input type="text" id="base-url-input" value="http://localhost:8080">
+          </div>
+          <button class="btn btn-primary btn-block" onclick="saveConfig()">저장</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📡 API ENDPOINTS</span>
+        </div>
+        <div class="panel-body" style="font-size:11px; line-height:2">
+          <div><span class="badge badge-green">POST</span> <span class="text-blue">/orders</span> — 주문 생성</div>
+          <div><span class="badge badge-blue">GET</span>  <span class="text-blue">/orders/{id}</span> — 주문 상세</div>
+          <div><span class="badge badge-green">POST</span> <span class="text-blue">/payment/{id}/preview</span> — 결제 미리보기</div>
+          <div><span class="badge badge-green">POST</span> <span class="text-blue">/payment/{id}</span> — 결제 처리</div>
+          <div><span class="badge badge-green">POST</span> <span class="text-blue">/deliveries/{id}/dispatch</span> — 배차 요청</div>
+          <div><span class="badge badge-green">POST</span> <span class="text-blue">/deliveries/{id}/status</span> — 배달 상태 변경</div>
+          <div><span class="badge badge-blue">GET</span>  <span class="text-blue">/riders/{id}/location</span> — 라이더 위치 조회</div>
+          <div><span class="badge badge-green">POST</span> <span class="text-blue">/riders/{id}/location</span> — 라이더 위치 업데이트</div>
+          <div><span class="badge badge-blue">GET</span>  <span class="text-blue">/riders/{id}/notifications/subscribe</span> — 라이더 SSE</div>
+          <div><span class="badge badge-blue">GET</span>  <span class="text-blue">/orders/{id}/notifications/subscribe</span> — 고객 SSE</div>
+          <div><span class="badge badge-blue">GET</span>  <span class="text-blue">/routes/me/current-route</span> — 현재 경로</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">ℹ DEMO GUIDE</span>
+        </div>
+        <div class="panel-body" style="font-size:12px; line-height:2; color:var(--text2)">
+          <div><span class="text-green">①</span> <b>CUSTOMER 탭</b>: 주문 생성 → 결제</div>
+          <div><span class="text-green">②</span> <b>DISPATCH 탭</b>: 배차 요청 (POST /deliveries/{id}/dispatch)</div>
+          <div><span class="text-green">③</span> <b>RIDER 탭</b>: SSE 구독 → 배차 알림 수신 확인</div>
+          <div><span class="text-green">④</span> <b>RIDER 탭</b>: 위치 업데이트로 이동 시뮬레이션</div>
+          <div><span class="text-green">⑤</span> <b>CUSTOMER 탭</b>: SSE 구독 → 근접 도착 알림 수신</div>
+          <div><span class="text-green">⑥</span> <b>RIDER 탭</b>: PICKED_UP → DELIVERED 상태 업데이트</div>
+          <hr class="sep">
+          <div style="color:var(--muted)">* 서버 실행 후 사용: <code style="color:var(--accent3)">./gradlew bootRun</code></div>
+          <div style="color:var(--muted)">* CORS 에러 시 서버 CORS 설정 확인</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <div class="toast-close" onclick="hideToast()">✕</div>
+  <div class="toast-title" id="toast-title"></div>
+  <div class="toast-body" id="toast-body"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+const STATE = {
+  baseUrl: 'http://localhost:8080',
+  currentOrderId: null,
+  currentDeliveryId: null,
+  currentRiderId: null,
+  orderSse: null,
+  riderSse: null,
+  riderLat: 37.498095,
+  riderLng: 127.028697,
+  deliveryTimestamps: {}
+};
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+window.onload = () => {
+  const saved = localStorage.getItem('delivery_base_url');
+  if (saved) {
+    STATE.baseUrl = saved;
+    document.getElementById('base-url-input').value = saved;
+  }
+  document.getElementById('base-url-display').textContent = STATE.baseUrl;
+  renderAsciiMap(null, null, null);
+};
+
+// ═══════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════
+function switchTab(name) {
+  ['customer','rider','dispatch','settings'].forEach(t => {
+    document.getElementById('view-' + t).style.display = 'none';
+    document.getElementById('tab-' + t).classList.remove('active');
+  });
+  document.getElementById('view-' + name).style.display =
+    (name === 'customer') ? 'contents' : 'grid';
+  if (name === 'rider') document.getElementById('view-' + name).style.display = 'grid';
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════
+function saveConfig() {
+  STATE.baseUrl = document.getElementById('base-url-input').value.trim();
+  localStorage.setItem('delivery_base_url', STATE.baseUrl);
+  document.getElementById('base-url-display').textContent = STATE.baseUrl;
+  showToast('CONFIG', '설정이 저장되었습니다: ' + STATE.baseUrl);
+  log('info', 'BASE_URL', STATE.baseUrl);
+}
+
+// ═══════════════════════════════════════
+//  API HELPER
+// ═══════════════════════════════════════
+async function api(method, path, body = null) {
+  const url = STATE.baseUrl + path;
+  setApiStatus('loading');
+  log('info', method, path);
+  try {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(url, opts);
+    const text = await res.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch { data = text; }
+    if (!res.ok) {
+      setApiStatus('error');
+      log('err', res.status.toString(), JSON.stringify(data));
+      showToast('API ERROR ' + res.status, JSON.stringify(data).substring(0, 100));
+      return null;
+    }
+    setApiStatus('ok');
+    log('ok', res.status.toString(), JSON.stringify(data).substring(0, 120));
+    return data;
+  } catch(e) {
+    setApiStatus('error');
+    log('err', 'NETWORK', e.message);
+    showToast('NETWORK ERROR', e.message);
+    return null;
+  }
+}
+
+function setApiStatus(state) {
+  const dot = document.getElementById('api-dot');
+  const txt = document.getElementById('api-status-text');
+  if (state === 'loading') { dot.className='dot idle'; txt.textContent='LOADING...'; txt.style.color='var(--warn)'; }
+  else if (state === 'ok')  { dot.className='dot ok';   txt.textContent='API OK';    txt.style.color='var(--accent)'; }
+  else if (state === 'error'){ dot.className='dot err'; txt.textContent='API ERROR'; txt.style.color='var(--err)'; }
+  else                       { dot.className='dot idle';txt.textContent='API IDLE';  txt.style.color='var(--muted)'; }
+}
+
+// ═══════════════════════════════════════
+//  ORDER ITEMS
+// ═══════════════════════════════════════
+function addItem() {
+  const list = document.getElementById('order-items-list');
+  const row = document.createElement('div');
+  row.className = 'order-item-row';
+  row.innerHTML = `
+    <input type="number" placeholder="menuId" value="1" style="width:70px">
+    <span style="color:var(--muted)">×</span>
+    <input type="number" placeholder="qty" value="1" style="width:50px">
+    <button class="remove-item" onclick="removeItem(this)">✕</button>
+  `;
+  list.appendChild(row);
+}
+function removeItem(btn) {
+  const rows = document.querySelectorAll('.order-item-row');
+  if (rows.length > 1) btn.closest('.order-item-row').remove();
+}
+function getOrderItems() {
+  return Array.from(document.querySelectorAll('.order-item-row')).map(row => {
+    const inputs = row.querySelectorAll('input');
+    return { menuId: parseInt(inputs[0].value), quantity: parseInt(inputs[1].value) };
+  });
+}
+
+// ═══════════════════════════════════════
+//  CREATE ORDER
+// ═══════════════════════════════════════
+async function createOrder() {
+  const body = {
+    storeId: parseInt(document.getElementById('order-store-id').value),
+    deliveryAddress: document.getElementById('order-address').value,
+    orderItems: getOrderItems()
+  };
+  const note = document.getElementById('order-note').value;
+  if (note) body.customerNote = note;
+
+  const res = await api('POST', '/orders', body);
+  if (!res) return;
+
+  STATE.currentOrderId = res.orderId;
+  document.getElementById('dispatch-order-id').value = res.orderId;
+  document.getElementById('detail-order-id').value = res.orderId;
+
+  // UI 업데이트
+  document.getElementById('order-detail-empty').style.display = 'none';
+  document.getElementById('order-detail-content').style.display = 'block';
+  document.getElementById('d-order-id').textContent = res.orderId;
+  document.getElementById('d-order-status').innerHTML = statusBadge(res.orderStatus);
+  document.getElementById('d-store-id').textContent = body.storeId;
+  document.getElementById('d-address').textContent = body.deliveryAddress;
+  document.getElementById('d-price').textContent = formatPrice(res.totalPrice);
+  document.getElementById('order-status-badge').innerHTML = statusBadge(res.orderStatus);
+  document.getElementById('payment-order-badge').textContent = 'ORDER #' + res.orderId;
+
+  // 결제 패널 활성화
+  document.getElementById('payment-section').style.opacity = '1';
+  document.getElementById('btn-pay').disabled = false;
+
+  // 타임라인 업데이트
+  setTlDone('tl-created');
+  STATE.deliveryTimestamps.created = new Date().toLocaleTimeString();
+  document.getElementById('tl-created-time').textContent = STATE.deliveryTimestamps.created;
+  setStep(2);
+
+  showToast('주문 생성 완료', '주문 #' + res.orderId + ' | ' + formatPrice(res.totalPrice));
+}
+
+// ═══════════════════════════════════════
+//  PAYMENT PREVIEW
+// ═══════════════════════════════════════
+async function previewPayment() {
+  if (!STATE.currentOrderId) { showToast('ERROR', '주문을 먼저 생성하세요'); return; }
+  const body = {
+    couponId: parseInt(document.getElementById('coupon-id').value) || 0,
+    useBaeminClub: document.getElementById('use-baemin-club').value === 'true'
+  };
+  const res = await api('POST', `/payment/${STATE.currentOrderId}/preview`, body);
+  if (!res) return;
+
+  document.getElementById('dp-food').textContent = formatPrice(res.originalPrice);
+  document.getElementById('dp-fee').textContent = formatPrice(0);
+  document.getElementById('dp-coupon').textContent = res.discountDetails?.couponDiscount
+    ? '- ' + formatPrice(res.discountDetails.couponDiscount) : '0원';
+  document.getElementById('dp-club').textContent = res.discountDetails?.baeminClubDiscount
+    ? '- ' + formatPrice(res.discountDetails.baeminClubDiscount) : '0원';
+  document.getElementById('dp-total').textContent = formatPrice(res.finalPrice);
+  document.getElementById('discount-preview').style.display = 'block';
+}
+
+// ═══════════════════════════════════════
+//  PROCESS PAYMENT
+// ═══════════════════════════════════════
+async function processPayment() {
+  if (!STATE.currentOrderId) return;
+  const body = {
+    paymentMethod: document.getElementById('payment-method').value,
+    couponId: parseInt(document.getElementById('coupon-id').value) || 0,
+    useBaeminClub: document.getElementById('use-baemin-club').value === 'true'
+  };
+  const res = await api('POST', `/payment/${STATE.currentOrderId}`, body);
+  if (!res) return;
+
+  document.getElementById('d-order-status').innerHTML = statusBadge(res.orderStatus);
+  document.getElementById('d-price').textContent = formatPrice(res.paidAmount);
+  document.getElementById('order-status-badge').innerHTML = statusBadge(res.orderStatus);
+
+  setTlDone('tl-paid');
+  STATE.deliveryTimestamps.paid = new Date().toLocaleTimeString();
+  document.getElementById('tl-paid-time').textContent = STATE.deliveryTimestamps.paid;
+  setStep(3);
+
+  showToast('결제 완료', '결제금액: ' + formatPrice(res.paidAmount) + ' | ' + res.paymentMethod);
+}
+
+// ═══════════════════════════════════════
+//  REFRESH ORDER STATUS
+// ═══════════════════════════════════════
+async function refreshOrderStatus() {
+  if (!STATE.currentOrderId) { showToast('ERROR', '주문을 먼저 생성하세요'); return; }
+  const res = await api('GET', `/orders/${STATE.currentOrderId}`);
+  if (!res) return;
+  document.getElementById('d-order-status').innerHTML = statusBadge(res.orderStatus);
+  document.getElementById('order-status-badge').innerHTML = statusBadge(res.orderStatus);
+}
+
+// ═══════════════════════════════════════
+//  ORDER SSE
+// ═══════════════════════════════════════
+function subscribeOrderSSE() {
+  if (!STATE.currentOrderId) { showToast('ERROR', '주문을 먼저 생성하세요'); return; }
+  if (STATE.orderSse) STATE.orderSse.close();
+
+  const url = `${STATE.baseUrl}/orders/${STATE.currentOrderId}/notifications/subscribe`;
+  STATE.orderSse = new EventSource(url);
+  document.getElementById('live-indicator').style.display = 'flex';
+  document.getElementById('btn-sse-subscribe').disabled = true;
+  document.getElementById('btn-sse-unsubscribe').disabled = false;
+  sseLog('연결 중... ' + url);
+  setStep(4);
+
+  STATE.orderSse.addEventListener('connected', e => {
+    sseLog('✔ connected: ' + e.data);
+  });
+  STATE.orderSse.addEventListener('delivery-near-arrival', e => {
+    const data = JSON.parse(e.data);
+    sseLog('⚡ delivery-near-arrival: 잔여 ' + data.remainingDistanceKm + 'km');
+    setTlActive('tl-neararrival');
+    STATE.deliveryTimestamps.neararrival = new Date().toLocaleTimeString();
+    document.getElementById('tl-neararrival-time').textContent = STATE.deliveryTimestamps.neararrival;
+    showToast('🛵 라이더 근접!', data.message || '라이더가 0.5km 이내에 있습니다');
+  });
+  STATE.orderSse.onerror = () => {
+    sseLog('✕ SSE 연결 오류 또는 종료');
+    document.getElementById('live-indicator').style.display = 'none';
+  };
+}
+function unsubscribeOrderSSE() {
+  if (STATE.orderSse) { STATE.orderSse.close(); STATE.orderSse = null; }
+  document.getElementById('live-indicator').style.display = 'none';
+  document.getElementById('btn-sse-subscribe').disabled = false;
+  document.getElementById('btn-sse-unsubscribe').disabled = true;
+  sseLog('■ SSE 구독 해제');
+}
+function sseLog(msg) {
+  const panel = document.getElementById('sse-panel');
+  const div = document.createElement('div');
+  div.className = 'sse-event';
+  div.innerHTML = `<span style="color:var(--muted)">${time()}</span> <span class="sse-event-type">${msg}</span>`;
+  panel.appendChild(div);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+// ═══════════════════════════════════════
+//  DISPATCH
+// ═══════════════════════════════════════
+async function requestDispatch() {
+  const orderId = document.getElementById('dispatch-order-id').value;
+  if (!orderId) { showToast('ERROR', '주문 ID를 입력하세요'); return; }
+  const body = { deliveryType: document.getElementById('dispatch-type').value };
+  const res = await api('POST', `/deliveries/${orderId}/dispatch`, body);
+  if (!res) return;
+
+  STATE.currentDeliveryId = res.deliveryId;
+  document.getElementById('delivery-id-input').value = res.deliveryId;
+
+  const resultEl = document.getElementById('dispatch-result');
+  resultEl.innerHTML = `
+    <div class="kv"><span class="k">Order ID</span><span class="v blue">${res.orderId}</span></div>
+    <div class="kv"><span class="k">Delivery ID</span><span class="v green">${res.deliveryId}</span></div>
+    <div class="kv"><span class="k">Dispatch Status</span><span class="v">${statusBadge(res.dispatchStatus)}</span></div>
+    <div class="kv"><span class="k">Delivery Type</span><span class="v">${res.deliveryType}</span></div>
+  `;
+
+  // 라이더 탭 상태 업데이트
+  document.getElementById('r-delivery-id').textContent = res.deliveryId;
+  document.getElementById('r-order-id').textContent = res.orderId;
+  document.getElementById('r-delivery-type').textContent = res.deliveryType;
+  document.getElementById('r-status').innerHTML = statusBadge('DISPATCHED');
+  document.getElementById('r-rider-status').innerHTML = statusBadge('DISPATCHED');
+
+  // 타임라인
+  setTlDone('tl-paid');
+  setTlActive('tl-dispatched');
+  STATE.deliveryTimestamps.dispatched = new Date().toLocaleTimeString();
+  document.getElementById('tl-dispatched-time').textContent = STATE.deliveryTimestamps.dispatched;
+
+  dLog('ok', 'DISPATCH', `배차 완료 Delivery#${res.deliveryId}`);
+  showToast('배차 완료', `Delivery #${res.deliveryId} | ${res.deliveryType}`);
+}
+
+// ═══════════════════════════════════════
+//  ORDER DETAIL
+// ═══════════════════════════════════════
+async function getOrderDetail() {
+  const orderId = document.getElementById('detail-order-id').value;
+  if (!orderId) return;
+  const res = await api('GET', `/orders/${orderId}`);
+  if (!res) return;
+
+  const el = document.getElementById('order-detail-data');
+  el.innerHTML = `
+    <div class="kv"><span class="k">Order ID</span><span class="v blue">${res.orderId}</span></div>
+    <div class="kv"><span class="k">Status</span><span class="v">${statusBadge(res.orderStatus)}</span></div>
+    <div class="kv"><span class="k">Store</span><span class="v">${res.store?.name || '-'} (${res.store?.address || '-'})</span></div>
+    <div class="kv"><span class="k">Delivery Addr</span><span class="v">${res.deliveryAddress}</span></div>
+    <div class="kv"><span class="k">Items</span><span class="v">${(res.items||[]).map(i => i.name + ' x' + i.quantity).join(', ')}</span></div>
+    <div class="kv"><span class="k">Note</span><span class="v">${res.customerNote || '-'}</span></div>
+  `;
+  document.getElementById('order-detail-result').style.display = 'block';
+}
+
+// ═══════════════════════════════════════
+//  RIDER LOCATION
+// ═══════════════════════════════════════
+async function getRiderLocation() {
+  const riderId = document.getElementById('rider-id').value;
+  const res = await api('GET', `/riders/${riderId}/location`);
+  if (!res) return;
+
+  STATE.riderLat = res.latitude;
+  STATE.riderLng = res.longitude;
+  document.getElementById('rider-lat').value = res.latitude;
+  document.getElementById('rider-lng').value = res.longitude;
+
+  document.getElementById('rider-location-info').innerHTML = `
+    <div class="kv"><span class="k">Rider ID</span><span class="v blue">${res.riderId}</span></div>
+    <div class="kv"><span class="k">Latitude</span><span class="v">${res.latitude}</span></div>
+    <div class="kv"><span class="k">Longitude</span><span class="v">${res.longitude}</span></div>
+    <div class="kv"><span class="k">Updated At</span><span class="v text-muted">${res.lastUpdatedAt || '-'}</span></div>
+  `;
+  renderAsciiMap(res.latitude, res.longitude, false);
+  rLog('ok', 'LOCATION', `위도:${res.latitude} 경도:${res.longitude}`);
+}
+
+async function updateRiderLocation() {
+  const riderId = document.getElementById('rider-id').value;
+  const lat = parseFloat(document.getElementById('rider-lat').value);
+  const lng = parseFloat(document.getElementById('rider-lng').value);
+  const res = await api('POST', `/riders/${riderId}/location`, { latitude: lat, longitude: lng });
+  if (!res) return;
+
+  STATE.riderLat = lat;
+  STATE.riderLng = lng;
+
+  // 고객 위치와의 거리 계산 (37.498095, 127.028697)
+  const dist = haversine(lat, lng, 37.498095, 127.028697);
+  const isNear = dist <= 0.5;
+
+  document.getElementById('rider-location-info').innerHTML = `
+    <div class="kv"><span class="k">Rider ID</span><span class="v blue">${res.riderId}</span></div>
+    <div class="kv"><span class="k">Latitude</span><span class="v">${res.latitude}</span></div>
+    <div class="kv"><span class="k">Longitude</span><span class="v">${res.longitude}</span></div>
+    <div class="kv"><span class="k">고객까지 거리</span><span class="v ${isNear ? 'yellow' : ''}">${dist.toFixed(3)} km ${isNear ? '⚡ 근접!' : ''}</span></div>
+    <div class="kv"><span class="k">Updated At</span><span class="v text-muted">${res.lastUpdatedAt || new Date().toISOString()}</span></div>
+  `;
+  renderAsciiMap(lat, lng, isNear);
+  rLog('ok', 'UPDATE', `위도:${lat} 경도:${lng} | 고객까지 ${dist.toFixed(3)}km`);
+
+  if (isNear) {
+    showToast('⚡ 근접 도착', `고객까지 ${dist.toFixed(3)}km — 알림 전송됨`);
+    rLog('warn', 'NEAR', '0.5km 이내 — near-arrival 이벤트 발송');
+  }
+}
+
+function setLocation(lat, lng) {
+  document.getElementById('rider-lat').value = lat;
+  document.getElementById('rider-lng').value = lng;
+}
+
+// ═══════════════════════════════════════
+//  DELIVERY STATUS
+// ═══════════════════════════════════════
+async function updateDeliveryStatus() {
+  const deliveryId = document.getElementById('delivery-id-input').value;
+  if (!deliveryId) { showToast('ERROR', 'Delivery ID를 입력하세요'); return; }
+  const status = document.getElementById('delivery-status-select').value;
+  const res = await api('POST', `/deliveries/${deliveryId}/status`, { status });
+  if (!res) return;
+
+  document.getElementById('r-status').innerHTML = statusBadge(res.updatedStatus);
+
+  if (status === 'PICKED_UP') {
+    setTlDone('tl-dispatched');
+    setTlActive('tl-pickedup');
+    STATE.deliveryTimestamps.pickedup = new Date().toLocaleTimeString();
+    document.getElementById('tl-pickedup-time').textContent = STATE.deliveryTimestamps.pickedup;
+  } else if (status === 'DELIVERED') {
+    setTlDone('tl-pickedup');
+    setTlDone('tl-neararrival');
+    setTlActive('tl-delivered');
+    STATE.deliveryTimestamps.delivered = new Date().toLocaleTimeString();
+    document.getElementById('tl-delivered-time').textContent = STATE.deliveryTimestamps.delivered;
+    document.getElementById('r-rider-status').innerHTML = statusBadge('READY');
+    showToast('배달 완료!', '주문 #' + res.orderId + ' 배달 완료');
+  }
+
+  rLog('ok', 'STATUS', `Delivery#${deliveryId} → ${status}`);
+  dLog('ok', 'STATUS', `Delivery#${deliveryId} → ${status}`);
+}
+
+// ═══════════════════════════════════════
+//  RIDER SSE
+// ═══════════════════════════════════════
+function subscribeRiderSSE() {
+  const riderId = document.getElementById('rider-id').value;
+  if (STATE.riderSse) STATE.riderSse.close();
+
+  const url = `${STATE.baseUrl}/riders/${riderId}/notifications/subscribe`;
+  STATE.riderSse = new EventSource(url);
+  document.getElementById('btn-rider-sse-sub').disabled = true;
+  document.getElementById('btn-rider-sse-unsub').disabled = false;
+  riderSseLog('연결 중... ' + url);
+
+  STATE.riderSse.addEventListener('connected', e => {
+    riderSseLog('✔ connected: ' + e.data);
+  });
+  STATE.riderSse.addEventListener('dispatch-assigned', e => {
+    const data = JSON.parse(e.data);
+    riderSseLog(`⚡ dispatch-assigned: Order#${data.orderId} Delivery#${data.deliveryId} [${data.deliveryType}]`);
+    document.getElementById('r-delivery-id').textContent = data.deliveryId;
+    document.getElementById('r-order-id').textContent = data.orderId;
+    document.getElementById('r-delivery-type').textContent = data.deliveryType;
+    document.getElementById('r-rider-status').innerHTML = statusBadge('DISPATCHED');
+    STATE.currentDeliveryId = data.deliveryId;
+    document.getElementById('delivery-id-input').value = data.deliveryId;
+    showToast('🛵 배차 알림!', `Order #${data.orderId} | ${data.deliveryType}`);
+  });
+  STATE.riderSse.onerror = () => riderSseLog('✕ SSE 오류 또는 종료');
+}
+function unsubscribeRiderSSE() {
+  if (STATE.riderSse) { STATE.riderSse.close(); STATE.riderSse = null; }
+  document.getElementById('btn-rider-sse-sub').disabled = false;
+  document.getElementById('btn-rider-sse-unsub').disabled = true;
+  riderSseLog('■ 구독 해제');
+}
+function riderSseLog(msg) {
+  const p = document.getElementById('rider-sse-panel');
+  p.innerHTML += `<div><span style="color:var(--muted)">${time()}</span> <span style="color:var(--accent3)">${msg}</span></div>`;
+  p.scrollTop = p.scrollHeight;
+}
+
+// ═══════════════════════════════════════
+//  ROUTE
+// ═══════════════════════════════════════
+async function getCurrentRoute() {
+  const res = await api('GET', '/routes/me/current-route');
+  if (!res) return;
+
+  const el = document.getElementById('route-content');
+  if (!res.stops || res.stops.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);text-align:center;padding:10px">경로 없음</div>';
+    return;
+  }
+  el.innerHTML = res.stops.map(s => `
+    <div class="kv">
+      <span class="k">${s.sequence}. ${s.type === 'PICKUP' ? '🏪 픽업' : '🏠 배달'}</span>
+      <span class="v">${s.address}</span>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+//  ASCII MAP
+// ═══════════════════════════════════════
+function renderAsciiMap(rLat, rLng, isNear) {
+  // 지도 좌표 (강남구 기준)
+  // 좌상단: 37.510, 126.995  /  우하단: 37.485, 127.065
+  const MAP_W = 60, MAP_H = 14;
+  const LAT_MAX = 37.510, LAT_MIN = 37.485;
+  const LNG_MIN = 126.995, LNG_MAX = 127.065;
+
+  // 고정 좌표
+  const STORE = { lat: 37.5048, lng: 127.0484, sym: '■', col: 'orange' };
+  const CUST  = { lat: 37.4981, lng: 127.0287, sym: '●', col: 'green' };
+
+  const grid = Array.from({length: MAP_H}, () => Array(MAP_W).fill(' '));
+  const colors = Array.from({length: MAP_H}, () => Array(MAP_W).fill(''));
+
+  function toGrid(lat, lng) {
+    const gx = Math.round((lng - LNG_MIN) / (LNG_MAX - LNG_MIN) * (MAP_W - 1));
+    const gy = Math.round((LAT_MAX - lat) / (LAT_MAX - LAT_MIN) * (MAP_H - 1));
+    return [Math.max(0, Math.min(MAP_W-1, gx)), Math.max(0, Math.min(MAP_H-1, gy))];
+  }
+
+  // 격자 그리기
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      if (y === 0 || y === MAP_H-1) grid[y][x] = '─';
+      else if (x === 0 || x === MAP_W-1) grid[y][x] = '│';
+      else grid[y][x] = '·';
+    }
+    grid[y][0] = (y===0) ? '┌' : (y===MAP_H-1) ? '└' : '│';
+    grid[y][MAP_W-1] = (y===0) ? '┐' : (y===MAP_H-1) ? '┘' : '│';
+  }
+
+  // 가게 배치
+  const [sx, sy] = toGrid(STORE.lat, STORE.lng);
+  grid[sy][sx] = STORE.sym; colors[sy][sx] = 'orange';
+
+  // 고객 배치
+  const [cx, cy] = toGrid(CUST.lat, CUST.lng);
+  grid[cy][cx] = CUST.sym; colors[cy][cx] = 'green';
+
+  // 라이더 배치
+  if (rLat !== null && rLng !== null) {
+    const [rx, ry] = toGrid(rLat, rLng);
+    grid[ry][rx] = isNear ? '★' : '▲';
+    colors[ry][rx] = isNear ? 'yellow' : 'blue';
+  }
+
+  // HTML 렌더링
+  let html = '';
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      const ch = grid[y][x];
+      const col = colors[y][x];
+      if (col === 'orange') html += `<span style="color:var(--accent2)">${ch}</span>`;
+      else if (col === 'green') html += `<span style="color:var(--accent)">${ch}</span>`;
+      else if (col === 'blue') html += `<span style="color:var(--accent3)">${ch}</span>`;
+      else if (col === 'yellow') html += `<span style="color:var(--warn)">${ch}</span>`;
+      else html += `<span style="color:var(--muted)">${ch}</span>`;
+    }
+    html += '\n';
+  }
+
+  const dist = (rLat && rLng) ? haversine(rLat, rLng, CUST.lat, CUST.lng) : null;
+  html += `\n<span style="color:var(--muted)">  가게(37.5048,127.0484) → 고객(37.4981,127.0287)</span>`;
+  if (dist !== null) {
+    html += `\n<span style="color:var(--muted)">  라이더→고객 거리: </span><span style="color:${dist<=0.5 ? 'var(--warn)':'var(--accent3)'}">` + dist.toFixed(3) + 'km' + (dist<=0.5?' ⚡ 근접':'') + '</span>';
+  }
+  document.getElementById('ascii-map').innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLng = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function formatPrice(p) {
+  return p ? p.toLocaleString('ko-KR') + '원' : '-';
+}
+
+function time() {
+  return new Date().toLocaleTimeString('ko-KR', {hour12:false});
+}
+
+function statusBadge(s) {
+  const map = {
+    CREATED: 'badge-blue', PAID: 'badge-green', DELIVERED: 'badge-green',
+    CANCELLED: 'badge-red', CANCEL: 'badge-red',
+    PENDING: 'badge-muted', DISPATCHED: 'badge-yellow',
+    PICKED_UP: 'badge-orange',
+    READY: 'badge-blue', OFFLINE: 'badge-muted',
+    REQUESTED: 'badge-blue', ACCEPTED: 'badge-green', REJECTED: 'badge-red',
+    SINGLE: 'badge-muted', BUNDLE: 'badge-orange',
+    SUCCESS: 'badge-green', FAILED: 'badge-red',
+  };
+  return `<span class="badge ${map[s] || 'badge-muted'}">${s}</span>`;
+}
+
+function setTlDone(id) {
+  document.getElementById(id).className = 'tl-dot done';
+}
+function setTlActive(id) {
+  document.getElementById(id).className = 'tl-dot active';
+}
+function setStep(n) {
+  const ids = ['step-order','step-payment','step-dispatch','step-track'];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (i < n-1) { el.className = 'flow-step done'; }
+    else if (i === n-1) { el.className = 'flow-step active'; }
+    else { el.className = 'flow-step'; }
+  });
+}
+
+// ═══════════════════════════════════════
+//  LOG
+// ═══════════════════════════════════════
+function log(type, tag, msg) {
+  addLog('log-panel', type, tag, msg);
+}
+function rLog(type, tag, msg) {
+  addLog('rider-log-panel', type, tag, msg);
+}
+function dLog(type, tag, msg) {
+  addLog('dispatch-log-panel', type, tag, msg);
+}
+function addLog(panelId, type, tag, msg) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-time">${time()}</span><span class="log-tag ${type}">[${tag}]</span><span class="log-msg">${msg}</span>`;
+  panel.appendChild(line);
+  panel.scrollTop = panel.scrollHeight;
+}
+function clearLog() { document.getElementById('log-panel').innerHTML = ''; }
+function clearRiderLog() { document.getElementById('rider-log-panel').innerHTML = ''; }
+function clearDispatchLog() { document.getElementById('dispatch-log-panel').innerHTML = ''; }
+
+// ═══════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════
+let toastTimer = null;
+function showToast(title, body) {
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-body').textContent = body;
+  const el = document.getElementById('toast');
+  el.className = 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 4000);
+}
+function hideToast() {
+  document.getElementById('toast').className = '';
+}
+</script>
+</body>
+</html>
