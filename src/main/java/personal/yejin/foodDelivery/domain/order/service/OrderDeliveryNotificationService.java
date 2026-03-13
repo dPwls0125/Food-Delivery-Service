@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -20,6 +23,9 @@ public class OrderDeliveryNotificationService {
     private static final String NEAR_ARRIVAL_EVENT_NAME = "delivery-near-arrival";
 
     private final Map<Long, List<SseEmitter>> orderEmitters = new ConcurrentHashMap<>();
+    
+    // 알림 전용 고정 스레드 풀 생성 (예: size 10)
+    private final ExecutorService notificationExecutor = Executors.newFixedThreadPool(10);
 
     public SseEmitter subscribeOrderNotification(Long orderId) {
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MILLIS);
@@ -41,14 +47,16 @@ public class OrderDeliveryNotificationService {
 
         List<SseEmitter> emitters = orderEmitters.getOrDefault(orderId, List.of());
         for (SseEmitter emitter : emitters) {
-            try {
-                emitter.send(SseEmitter.event()
-                        .name(NEAR_ARRIVAL_EVENT_NAME)
-                        .data(payload));
-            } catch (IOException e) {
-                log.warn("Near arrival SSE 전송 실패. orderId={}, deliveryId={}", orderId, delivery.getId(), e);
-                removeEmitter(orderId, emitter);
-            }
+            CompletableFuture.runAsync(() -> {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name(NEAR_ARRIVAL_EVENT_NAME)
+                            .data(payload));
+                } catch (IOException e) {
+                    log.warn("Near arrival SSE 전송 실패. orderId={}, deliveryId={}", orderId, delivery.getId(), e);
+                    removeEmitter(orderId, emitter);
+                }
+            }, notificationExecutor);
         }
     }
 

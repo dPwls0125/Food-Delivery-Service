@@ -10,15 +10,15 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter // For setId()
+@Setter
 @SuperBuilder
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // For SuperBuilder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @MappedSuperclass
 public abstract class GlobalEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id; // Make it protected so child classes can access in builder
+    protected Long id;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
