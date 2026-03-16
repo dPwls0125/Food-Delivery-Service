@@ -22,6 +22,9 @@ public class Order extends GlobalEntity {
     @Column(nullable = false, name = "store_id")
     private Long storeId;
 
+    @Column(nullable = false, name = "user_id")
+    private Long userId;
+
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "latitude", column = @Column(name = "pickup_latitude")),
@@ -46,11 +49,18 @@ public class Order extends GlobalEntity {
     @Builder.Default
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private OrderBill orderBill;
+    private int foodPrice;
+    private int deliveryFee;
+    private int finalPrice;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
     private String customerNote; // 상세 조회 API에 포함된 고객 요청
+
+    public void updatePrices(int foodPrice, int deliveryFee, int discountAmount) {
+        this.foodPrice = foodPrice;
+        this.deliveryFee = deliveryFee;
+        this.finalPrice = foodPrice + deliveryFee - discountAmount;
+    }
 }

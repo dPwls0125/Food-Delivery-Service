@@ -44,7 +44,6 @@ public class DeliveryService {
 
     public Optional<Delivery> findBundleCandidate(Delivery delivery) {
         Location pickupLocation1 = delivery.getOrder().getPickupLocation();
-
         return deliveryRepository.findByIdIsNotAndDeliveryTypeAndStatus(
                         delivery.getId(),
                         DeliveryType.BUNDLE,

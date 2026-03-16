@@ -41,6 +41,9 @@ public class Delivery extends GlobalEntity {
     @Column(name = "near_arrival_notified", nullable = false)
     private boolean nearArrivalNotified;
 
+    @Column(name = "estimated_arrival_time")
+    private java.time.LocalDateTime estimatedArrivalTime;
+
     public void setRider(Rider rider) {
         this.rider = rider;
     }

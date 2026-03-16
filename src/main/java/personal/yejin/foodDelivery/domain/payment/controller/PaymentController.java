@@ -1,24 +1,28 @@
 package personal.yejin.foodDelivery.domain.payment.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import personal.yejin.foodDelivery.domain.order.dto.OrderPaymentRequest;
 import personal.yejin.foodDelivery.domain.order.dto.OrderPaymentResponse;
-import personal.yejin.foodDelivery.domain.order.model.OrderStatus;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountDetails;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewRequest;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewResponse;
-
-import java.time.LocalDateTime;
+import personal.yejin.foodDelivery.domain.payment.service.PaymentService;
 
 @RestController
 @RequestMapping("/payment")
+@RequiredArgsConstructor
 public class PaymentController {
+
+    private final PaymentService paymentService;
+
     @PostMapping("/{orderId}/preview")
     public ResponseEntity<DiscountPreviewResponse> previewDiscounts(
             @PathVariable Long orderId,
             @RequestBody DiscountPreviewRequest request
     ) {
+        // TODO: Preview logic could also use OrderBillService
         DiscountDetails discountDetails = new DiscountDetails(3000, 1500);
         DiscountPreviewResponse fakeResponse = new DiscountPreviewResponse(
                 orderId,
@@ -35,17 +39,8 @@ public class PaymentController {
             @PathVariable Long orderId,
             @RequestBody OrderPaymentRequest request
     ) {
-        OrderPaymentResponse fakeResponse = new OrderPaymentResponse(
-                orderId,
-                OrderStatus.PAID,
-                OrderPaymentResponse.PaymentStatus.SUCCESS,
-                18000,
-                4500,
-                13500,
-                request.paymentMethod(),
-                LocalDateTime.parse("2026-01-05T15:10:00")
-        );
-        return ResponseEntity.ok(fakeResponse);
+        OrderPaymentResponse response = paymentService.processPayment(orderId, request);
+        return ResponseEntity.ok(response);
     }
 
 }

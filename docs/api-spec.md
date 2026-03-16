@@ -148,7 +148,7 @@
 ```
 
 ---
-
+ 
 ## 4. 라이더 매칭 요청 (Owner)
 
 **POST** `/deliveries/{orderId}/dispatch`

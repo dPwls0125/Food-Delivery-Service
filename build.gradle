@@ -47,6 +47,7 @@ dependencies {
 
 	// 향후 API 설계 논의를 대비한 최소 Web 환경
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.kafka:spring-kafka'
 
 	// JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

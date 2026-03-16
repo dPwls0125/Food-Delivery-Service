@@ -19,7 +19,8 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
-    public Order createOrder(Long storeId, List<OrderItem> orderItems, String deliveryAddress, DeliveryType deliveryType, String customerNote) {
+    public Order createOrder(Long storeId, List<OrderItem> orderItems, String deliveryAddress,
+            DeliveryType deliveryType, String customerNote) {
         Order newOrder = Order.builder()
                 .storeId(storeId)
                 .deliveryAddress(deliveryAddress)
