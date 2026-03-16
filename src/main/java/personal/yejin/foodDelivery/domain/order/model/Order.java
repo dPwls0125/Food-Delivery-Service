@@ -63,4 +63,8 @@ public class Order extends GlobalEntity {
         this.deliveryFee = deliveryFee;
         this.finalPrice = foodPrice + deliveryFee - discountAmount;
     }
+
+    public void changeStatus(OrderStatus newStatus) {
+        this.orderStatus = newStatus;
+    }
 }
