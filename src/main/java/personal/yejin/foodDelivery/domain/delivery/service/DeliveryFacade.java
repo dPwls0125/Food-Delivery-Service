@@ -35,7 +35,6 @@ public class DeliveryFacade {
         return new DeliveryStatusUpdateResponse(delivery.getOrder().getId(), delivery.getStatus());
     }
 
-
     @Transactional
     public DispatchResponse dispatchRiderAndCreateDelivery(Long orderId, DeliveryType deliveryType) {
 
