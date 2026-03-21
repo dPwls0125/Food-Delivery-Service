@@ -2,10 +2,11 @@ package personal.yejin.foodDelivery.domain.order.dto;
 
 public record OrderPaymentRequest (
     PaymentMethod paymentMethod,
-    long couponId,
-    boolean useBaeminClub)
+    int finalPrice,
+    long userId
+    )
     {
-    public enum PaymentMethod {
+        public enum PaymentMethod {
         CARD, CASH
     }
 }

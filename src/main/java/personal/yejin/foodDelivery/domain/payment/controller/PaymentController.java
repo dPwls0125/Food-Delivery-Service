@@ -22,7 +22,6 @@ public class PaymentController {
             @PathVariable Long orderId,
             @RequestBody DiscountPreviewRequest request
     ) {
-        // TODO: Preview logic could also use OrderBillService
         DiscountDetails discountDetails = new DiscountDetails(3000, 1500);
         DiscountPreviewResponse fakeResponse = new DiscountPreviewResponse(
                 orderId,
@@ -37,9 +36,10 @@ public class PaymentController {
     @PostMapping("/{orderId}")
     public ResponseEntity<OrderPaymentResponse> processPayment(
             @PathVariable Long orderId,
+            @PathVariable String correlatedId,
             @RequestBody OrderPaymentRequest request
     ) {
-        OrderPaymentResponse response = paymentService.processPayment(orderId, request);
+        OrderPaymentResponse response = paymentService.processPayment(orderId, correlatedId, request);
         return ResponseEntity.ok(response);
     }
 
