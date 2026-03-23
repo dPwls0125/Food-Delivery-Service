@@ -1,20 +1,19 @@
 package personal.yejin.foodDelivery.domain.payment;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import personal.yejin.foodDelivery.domain.order.dto.DiscountPreviewRequest;
 import personal.yejin.foodDelivery.domain.order.dto.OrderPaymentRequest;
 import personal.yejin.foodDelivery.domain.payment.controller.PaymentController;
-import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewRequest;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PaymentController.class)
 public class PaymentControllerTest {
@@ -56,7 +55,7 @@ public class PaymentControllerTest {
     void testProcessPayment() throws Exception {
         // given
         long orderId = 5001L;
-        OrderPaymentRequest request = new OrderPaymentRequest(OrderPaymentRequest.PaymentMethod.CARD, 10L, true);
+        OrderPaymentRequest request = new OrderPaymentRequest(OrderPaymentRequest.PaymentMethod.CARD, 10_000, 1);
 
         // when & then
         mockMvc.perform(post("/payment/" + orderId)
