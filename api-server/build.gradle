@@ -1,0 +1,30 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    // API Server의 주요 기능 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.kafka:spring-kafka'
+    
+    // WebClient 사용을 위한 WebFlux
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    
+    // Spring AOP
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    
+    // 캐시 지원
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
+    // 실제 운영 DB - MySQL
+    runtimeOnly 'com.mysql:mysql-connector-j'
+}
+
+bootJar {
+    enabled = true
+}
+jar {
+    enabled = false
+}

@@ -56,9 +56,7 @@ public class PaymentServiceTest {
     @Test
     @DisplayName("결제가 성공한 경우, payment 정보를 success로 저장하고, 메서드가 종료되어 commit된 이후에 성공 이벤트가 발행된다.")
     void whenPaymentSuccess_succecssEventIsPublished_afterCommit(){
-
         // given
-
         AtomicBoolean committedDataVisibleWhenEventPublished = new AtomicBoolean(false);
 
         given(paymentAPI.pay(any(),any())).willReturn(Boolean.FALSE);
@@ -70,7 +68,6 @@ public class PaymentServiceTest {
                     committedDataVisibleWhenEventPublished.set(true);
                     return null;
                 });
-
 
         OrderPaymentRequest request = new OrderPaymentRequest(OrderPaymentRequest.PaymentMethod.CASH, 1000, 1L);
         //when

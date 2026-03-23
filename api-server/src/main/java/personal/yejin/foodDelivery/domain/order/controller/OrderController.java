@@ -6,8 +6,8 @@ import personal.yejin.foodDelivery.domain.order.dto.OrderCreateRequest;
 import personal.yejin.foodDelivery.domain.order.dto.OrderCreateResponse;
 import personal.yejin.foodDelivery.domain.order.model.OrderStatus;
 import personal.yejin.foodDelivery.domain.payment.dto.DiscountDetails;
-import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewRequest;
-import personal.yejin.foodDelivery.domain.payment.dto.DiscountPreviewResponse;
+import personal.yejin.foodDelivery.domain.order.dto.DiscountPreviewRequest;
+import personal.yejin.foodDelivery.domain.order.dto.DiscountPreviewResponse;
 import personal.yejin.foodDelivery.domain.rider.dto.RiderOrderDetailResponse;
 
 import java.net.URI;
@@ -74,7 +74,21 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-
+    @PostMapping("/{orderId}/preview")
+    public ResponseEntity<DiscountPreviewResponse> previewDiscounts(
+            @PathVariable Long orderId,
+            @RequestBody DiscountPreviewRequest request
+    ) {
+        DiscountDetails discountDetails = new DiscountDetails(3000, 1500);
+        DiscountPreviewResponse fakeResponse = new DiscountPreviewResponse(
+                orderId,
+                18000,
+                discountDetails,
+                4500,
+                13500
+        );
+        return ResponseEntity.ok(fakeResponse);
+    }
 
 }
 

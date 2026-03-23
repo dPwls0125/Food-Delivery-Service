@@ -1,6 +1,7 @@
 package personal.yejin.foodDelivery.domain.order.dto;
 
 import lombok.Builder;
+import personal.yejin.foodDelivery.domain.payment.model.PaymentStatus;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,4 @@ public record OrderPaymentResponse (
     OrderPaymentRequest.PaymentMethod paymentMethod,
     LocalDateTime paidAt)
     {
-    public enum PaymentStatus {
-        SUCCESS, FAILED
-    }
 }
