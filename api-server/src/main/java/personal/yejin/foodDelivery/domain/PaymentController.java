@@ -1,11 +1,11 @@
-package personal.yejin.foodDelivery.domain.payment.controller;
+package personal.yejin.foodDelivery.domain;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import personal.yejin.foodDelivery.domain.order.dto.OrderPaymentRequest;
-import personal.yejin.foodDelivery.domain.order.dto.OrderPaymentResponse;
 import personal.yejin.foodDelivery.domain.payment.service.PaymentService;
+import personal.yejin.foodDelivery.dto.PaymentResponse;
 
 @RestController
 @RequestMapping("/payment")
@@ -15,13 +15,11 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/{orderId}")
-    public ResponseEntity<OrderPaymentResponse> processPayment(
+    public ResponseEntity<PaymentResponse> processPayment(
             @PathVariable Long orderId,
-            @PathVariable String correlatedId,
             @RequestBody OrderPaymentRequest request
     ) {
-        OrderPaymentResponse response = paymentService.processPayment(orderId, correlatedId, request);
-        return ResponseEntity.ok(response);
+        PaymentResponse response = paymentService.processPayment(orderId, request);
+        return ResponseEntity.accepted().body(response);
     }
-
 }

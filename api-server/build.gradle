@@ -7,19 +7,21 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.kafka:spring-kafka'
-    
+
     // WebClient 사용을 위한 WebFlux
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    
-    // Spring AOP
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
-    
+
     // 캐시 지원
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'com.github.ben-manes.caffeine:caffeine'
 
     // 실제 운영 DB - MySQL
     runtimeOnly 'com.mysql:mysql-connector-j'
+    // 테스트용 인메모리 DB - H2
+    testRuntimeOnly 'com.h2database:h2'
+
+    implementation project(':common-event')
+    implementation project(':common')
 }
 
 bootJar {
