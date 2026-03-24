@@ -1,88 +1,55 @@
 plugins {
-	// 기본 Java 프로젝트 설정
+	// Root에서는 기본 플러그인 버전만 명시하고 적용(apply)은 하지 않습니다.
 	id 'java'
-
-	// Spring Boot 애플리케이션 실행 및 자동 설정 지원
-	id 'org.springframework.boot' version '3.5.9'
-
-	// Spring Boot BOM 기반 의존성 버전 관리
-	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.springframework.boot' version '3.5.9' apply false
+	id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
-// 개인 학습/멘토링 프로젝트이므로 groupId는 개인 네임스페이스로 설정
-group = 'personal.yejin'
-
-// 초기 개발 단계이므로 SNAPSHOT 버전 사용
-version = '0.0.1-SNAPSHOT'
-
-// 프로젝트 설명 (추후 구체화 가능)
-description = 'Demo project for Spring Boot'
-
-// Java 21 LTS 사용
-// Spring Boot 3.x에서 권장하는 JVM 버전이며,
-// toolchain을 사용해 로컬 JDK 환경과 무관하게 빌드 일관성 유지
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+allprojects {
+	group = 'personal.yejin'
+	version = '0.0.1-SNAPSHOT'
+	
+	repositories {
+		mavenCentral()
 	}
 }
 
-// Lombok을 컴파일 시에만 사용하기 위한 설정
-// annotationProcessor를 compileOnly에 확장시켜
-// 런타임 클래스패스에는 포함되지 않도록 함
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'io.spring.dependency-management'
+
+	// 모든 하위 모듈이 Spring Boot의 의존성 버전을 따르도록 설정
+	dependencyManagement {
+		imports {
+			mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+		}
 	}
-}
 
-// 의존성 저장소는 기본적으로 Maven Central만 사용
-repositories {
-	mavenCentral()
-}
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(21)
+		}
+	}
 
-dependencies {
-	// JPA 기반 도메인 모델링 및 DB 설계 논의를 위한 의존성
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	configurations {
+		compileOnly {
+			extendsFrom annotationProcessor
+		}
+	}
 
-	// 향후 API 설계 논의를 대비한 최소 Web 환경
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.kafka:spring-kafka'
+	dependencies {
+		// 모든 하위 프로젝트에서 롬복 및 기본 테스트 의존성 사용
+		compileOnly 'org.projectlombok:lombok'
+		annotationProcessor 'org.projectlombok:lombok'
+		testCompileOnly 'org.projectlombok:lombok'
+		testAnnotationProcessor 'org.projectlombok:lombok'
 
-	// JPA
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    testImplementation 'org.projectlombok:lombok:1.18.26'
-	testImplementation 'org.projectlombok:lombok:1.18.26'
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+		testImplementation 'io.projectreactor:reactor-test'
+		testImplementation 'org.mockito:mockito-core:5.5.0'
+	}
 
-	// 보일러플레이트 코드 감소를 위한 Lombok
-	// compileOnly + annotationProcessor 조합으로 런타임 의존성 제거
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-	testCompileOnly 'org.projectlombok:lombok'
-	testAnnotationProcessor 'org.projectlombok:lombok'
-
-	// 실제 운영 DB를 MySQL로 가정
-	// 컴파일 시에는 필요 없으므로 runtimeOnly로 설정
-	runtimeOnly 'com.mysql:mysql-connector-j'
-
-	// 기본적인 테스트 환경 구성
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'io.projectreactor:reactor-test'
-
-	// WebClient/WebTestClient 사용을 위한 WebFlux
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
-	// Spring AOP 의존성 추가
-	implementation 'org.springframework.boot:spring-boot-starter-aop'
-
-	// mockito
-	testImplementation 'org.mockito:mockito-core:5.5.0'
-
-	implementation 'org.springframework.boot:spring-boot-starter-cache'
-	implementation 'com.github.ben-manes.caffeine:caffeine'
-}
-
-// JUnit 5 기반 테스트 실행 설정
-tasks.named('test') {
-	useJUnitPlatform()
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
 }

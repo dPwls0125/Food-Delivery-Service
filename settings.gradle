@@ -1,1 +1,8 @@
 rootProject.name = 'delivery'
+
+include 'api-server'
+include 'common-event'
+
+include 'Payment'
+include 'common'
+include 'PostPayment'
