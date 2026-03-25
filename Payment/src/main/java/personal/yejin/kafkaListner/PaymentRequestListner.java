@@ -50,6 +50,7 @@ public class PaymentRequestListner {
         // 3. Payment 상태 업데이트
         PaymentStatus status = paySuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
         payment.setStatus(status);
+        payment.setFailReason(failureReason);
 
         // 4. Status Server에 상태 업데이트 // TODO
 //        statusServerClient.updateStatus(request.correlationId(), status);
