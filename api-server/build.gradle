@@ -1,5 +1,7 @@
 plugins {
-    id 'org.springframework.boot'
+    id 'java' // java 컴파일, 테스트, 패키징 기능 추가.
+    id 'org.springframework.boot' // bootRun, bootJar 같은 Spring Boot 기능 추가.
+    id 'io.spring.dependency-management' // 의존성 버전 자동 관리
 }
 
 dependencies {
