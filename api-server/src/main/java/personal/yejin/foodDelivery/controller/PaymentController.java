@@ -1,10 +1,10 @@
-package personal.yejin.foodDelivery.domain;
+package personal.yejin.foodDelivery.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import personal.yejin.foodDelivery.domain.order.dto.OrderPaymentRequest;
-import personal.yejin.foodDelivery.domain.payment.service.PaymentService;
+import personal.yejin.foodDelivery.service.PaymentService;
 import personal.yejin.foodDelivery.dto.PaymentResponse;
 
 @RestController

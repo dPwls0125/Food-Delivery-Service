@@ -1,7 +1,8 @@
 package personal.yejin.foodDelivery.domain.order.dto;
 
 import lombok.Builder;
-import personal.yejin.foodDelivery.domain.payment.model.PaymentStatus;
+import personal.yejin.model.PaymentMethod;
+import personal.yejin.model.PaymentStatus;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +11,7 @@ public record OrderPaymentResponse (
     long orderId,
     PaymentStatus paymentStatus,
     int paidAmount,
-    OrderPaymentRequest.PaymentMethod paymentMethod,
+    PaymentMethod paymentMethod,
     LocalDateTime paidAt)
     {
 }

@@ -1,4 +1,4 @@
-package personal.yejin.foodDelivery.domain.payment.service;
+package personal.yejin.foodDelivery.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
