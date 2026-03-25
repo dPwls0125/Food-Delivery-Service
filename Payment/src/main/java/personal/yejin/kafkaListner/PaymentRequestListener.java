@@ -9,22 +9,36 @@ import org.springframework.stereotype.Component;
 import personal.yejin.PaymentRequestEvent;
 import personal.yejin.PaymentResultEvent;
 import personal.yejin.model.Payment;
+import personal.yejin.model.PaymentMethod;
 import personal.yejin.model.PaymentStatus;
 import personal.yejin.repository.PaymentRepository;
+import personal.yejin.service.CardPaymentAPI;
+import personal.yejin.service.CashPaymentAPI;
 import personal.yejin.service.PaymentAPI;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PaymentRequestListner {
+public class PaymentRequestListener {
 
-    private final PaymentAPI paymentAPI;
+    private static final String KAFKA_PAYMENT_RESULT_TOPIC = "payment-result";
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final PaymentRepository paymentRepository;
-//    private final StatusServerClient statusServerClient; TODO
-    private static final String KAFKA_PAYMENT_RESULT_TOPIC = "payment-result";
+    //    private final StatusServerClient statusServerClient; TODO
+    private final Map<PaymentMethod, PaymentAPI> paymentAPIMap;
+
+
+    public PaymentRequestListener(KafkaTemplate<String, Object> kafkaTemplate, PaymentRepository paymentRepository) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.paymentRepository = paymentRepository;
+        this.paymentAPIMap = new HashMap<>();
+        paymentAPIMap.put(PaymentMethod.CARD, new CardPaymentAPI());
+        paymentAPIMap.put(PaymentMethod.CASH, new CashPaymentAPI());
+    }
 
     @Transactional
     @KafkaListener(topics = "payment-request", groupId = "payment-process-group")
@@ -37,8 +51,10 @@ public class PaymentRequestListner {
         boolean paySuccess = false;
         String failureReason = null;
 
+        PaymentMethod paymentMethod = request.paymentMethod();
+
         try {
-            paySuccess = paymentAPI.pay(request.finalPrice(), request.paymentMethod());
+            callPaymentApi(request, paymentMethod);
             if (!paySuccess) {
                 failureReason = "잔액 부족";
             }
@@ -70,6 +86,14 @@ public class PaymentRequestListner {
         log.info("PYMENT_RESULT_TOPIC 밸행 : orderId={}, correlationId={}", request.orderId(), request.correlationId());
     }
 
+    private void callPaymentApi(PaymentRequestEvent request, PaymentMethod paymentMethod) {
+        if (paymentMethod == PaymentMethod.CASH) {
+            paymentAPIMap.get(PaymentMethod.CASH).pay(request.finalPrice(), paymentMethod);
+        } else if (paymentMethod == PaymentMethod.CARD) {
+            paymentAPIMap.get(PaymentMethod.CARD).pay(request.finalPrice(), paymentMethod);
+        }
+    }
+
     private Payment savePaymentInPendingStatus(PaymentRequestEvent request) {
         Payment payment = Payment.builder()
                 .orderId(request.orderId())
@@ -81,4 +105,5 @@ public class PaymentRequestListner {
 
         return paymentRepository.save(payment);
     }
+
 }

@@ -1,10 +1,13 @@
 package personal.yejin.service;
+import org.springframework.stereotype.Component;
 import personal.yejin.model.PaymentMethod;
 
+
+@Component
 public class CashPaymentAPI implements PaymentAPI {
     @Override
     public boolean pay(int amount, PaymentMethod paymentMethod) {
-        return false;
+        return true;
     }
 
     @Override

@@ -1,7 +1,9 @@
 package personal.yejin.service;
 
+import org.springframework.stereotype.Component;
 import personal.yejin.model.PaymentMethod;
 
+@Component
 public class CardPaymentAPI implements PaymentAPI {
 
     @Override

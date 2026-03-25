@@ -7,7 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import personal.yejin.PaymentRequestEvent;
 import personal.yejin.PaymentResultEvent;
-import personal.yejin.kafkaListner.PaymentRequestListner;
+import personal.yejin.kafkaListner.PaymentRequestListener;
 import personal.yejin.model.Payment;
 import personal.yejin.model.PaymentMethod;
 import personal.yejin.model.PaymentStatus;
@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentRequestListnerTest {
+class PaymentRequestListenerTest {
 
     @Mock
     PaymentAPI paymentAPI;
@@ -30,7 +30,7 @@ class PaymentRequestListnerTest {
     PaymentRepository paymentRepository;
 
     @InjectMocks
-    PaymentRequestListner listener;
+    PaymentRequestListener listener;
 
     PaymentRequestEvent request = new PaymentRequestEvent(
             1L, 1L, "user-1", 10000, PaymentMethod.CARD
