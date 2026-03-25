@@ -54,7 +54,7 @@ public class PaymentRequestListener {
         PaymentMethod paymentMethod = request.paymentMethod();
 
         try {
-            callPaymentApi(request, paymentMethod);
+            paySuccess = callPaymentApi(request, paymentMethod);
             if (!paySuccess) {
                 failureReason = "잔액 부족";
             }
@@ -86,12 +86,12 @@ public class PaymentRequestListener {
         log.info("PYMENT_RESULT_TOPIC 밸행 : orderId={}, correlationId={}", request.orderId(), request.correlationId());
     }
 
-    private void callPaymentApi(PaymentRequestEvent request, PaymentMethod paymentMethod) {
-        if (paymentMethod == PaymentMethod.CASH) {
-            paymentAPIMap.get(PaymentMethod.CASH).pay(request.finalPrice(), paymentMethod);
-        } else if (paymentMethod == PaymentMethod.CARD) {
-            paymentAPIMap.get(PaymentMethod.CARD).pay(request.finalPrice(), paymentMethod);
+    private boolean callPaymentApi(PaymentRequestEvent request, PaymentMethod paymentMethod) {
+        PaymentAPI api = paymentAPIMap.get(paymentMethod);
+        if (api != null) {
+            return api.pay(request.finalPrice(), paymentMethod);
         }
+        return false;
     }
 
     private Payment savePaymentInPendingStatus(PaymentRequestEvent request) {
