@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+group = 'personal.yejin'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // 공통 모듈
+    implementation project(':common-event')
+    implementation project(':common')
+}
+
+test {
+    useJUnitPlatform()
+}
