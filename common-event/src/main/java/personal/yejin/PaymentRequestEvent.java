@@ -3,10 +3,10 @@ package personal.yejin;
 import personal.yejin.model.PaymentMethod;
 
 public record PaymentRequestEvent(
-        Long orderId,
-        Long userId,
+        long orderId,
+        long userId,
         String correlationId,
-        Integer finalPrice,
+        int finalPrice,
         PaymentMethod paymentMethod
 ) {
 }
