@@ -15,7 +15,7 @@ import java.util.List;
 public class OrderController {
     @PostMapping
     public ResponseEntity<OrderCreateResponse> createOrder(
-            @RequestBody OrderCreateRequest orderCreateRequest){
+            @RequestBody OrderCreateRequest orderCreateRequest) {
         long orderId = 5001L;
 
         OrderCreateResponse response = OrderCreateResponse.builder()
@@ -28,31 +28,27 @@ public class OrderController {
                 .body(response);
     }
 
-
     @GetMapping("/{orderId}")
-    public ResponseEntity<?> getOrder(@PathVariable Long orderId){ // TODO : role에 따라서 응답 DTO 분기하기
+    public ResponseEntity<?> getOrder(@PathVariable Long orderId) { // TODO : role에 따라서 응답 DTO 분기하기
         var storeInfo = RiderOrderDetailResponse.StoreInfo.builder()
-            .name("김밥천국")
-            .address("서울시 강남구 ...")
-            .build();
+                .name("김밥천국")
+                .address("서울시 강남구 ...")
+                .build();
 
         var itemsInfo = List.of(
-            RiderOrderDetailResponse.ItemInfo.builder().name("김밥").quantity(2).build(),
-            RiderOrderDetailResponse.ItemInfo.builder().name("라면").quantity(1).build()
-        );
+                RiderOrderDetailResponse.ItemInfo.builder().name("김밥").quantity(2).build(),
+                RiderOrderDetailResponse.ItemInfo.builder().name("라면").quantity(1).build());
 
         var fakeResponse = RiderOrderDetailResponse.builder()
-            .orderId(orderId)
-            .store(storeInfo)
-            .deliveryAddress("서울시 강남구 테헤란로 123")
-            .orderStatus(OrderStatus.PAID)
-            .items(itemsInfo)
-            .customerNote("문 앞에 놔주세요")
-            .build();
+                .orderId(orderId)
+                .store(storeInfo)
+                .deliveryAddress("서울시 강남구 테헤란로 123")
+                .orderStatus(OrderStatus.PAID)
+                .items(itemsInfo)
+                .customerNote("문 앞에 놔주세요")
+                .build();
 
         return ResponseEntity.ok(fakeResponse);
     }
 
-
 }
-
