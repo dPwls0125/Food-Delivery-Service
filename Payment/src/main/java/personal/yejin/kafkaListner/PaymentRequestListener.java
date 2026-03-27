@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import personal.yejin.client.StatusServerClient;
 import personal.yejin.PaymentRequestEvent;
 import personal.yejin.PaymentResultEvent;
 import personal.yejin.model.Payment;
@@ -28,13 +29,15 @@ public class PaymentRequestListener {
     private static final String KAFKA_PAYMENT_RESULT_TOPIC = "payment-result";
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final PaymentRepository paymentRepository;
-    //    private final StatusServerClient statusServerClient; TODO
+    private final StatusServerClient statusServerClient;
     private final Map<PaymentMethod, PaymentAPI> paymentAPIMap;
 
 
-    public PaymentRequestListener(KafkaTemplate<String, Object> kafkaTemplate, PaymentRepository paymentRepository) {
+    public PaymentRequestListener(KafkaTemplate<String, Object> kafkaTemplate, PaymentRepository paymentRepository,
+                                   StatusServerClient statusServerClient) {
         this.kafkaTemplate = kafkaTemplate;
         this.paymentRepository = paymentRepository;
+        this.statusServerClient = statusServerClient;
         this.paymentAPIMap = new HashMap<>();
         paymentAPIMap.put(PaymentMethod.CARD, new CardPaymentAPI());
         paymentAPIMap.put(PaymentMethod.CASH, new CashPaymentAPI());
@@ -68,8 +71,9 @@ public class PaymentRequestListener {
         payment.setStatus(status);
         payment.setFailReason(failureReason);
 
-        // 4. Status Server에 상태 업데이트 // TODO
-//        statusServerClient.updateStatus(request.correlationId(), status);
+        // 4. Status Server에 상태 업데이트
+        statusServerClient.updatePaymentStatus(
+                request.orderId(), request.correlationId(), status, failureReason);
 
         // 5. 결과 이벤트 발행 (성공/실패 모두)
         PaymentResultEvent event = new PaymentResultEvent(
