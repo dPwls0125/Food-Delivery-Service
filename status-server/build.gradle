@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
 }
 
 group = 'personal.yejin'
@@ -10,9 +12,22 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    implementation project(':common-event')
+    implementation project(':common')
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+bootJar {
+    enabled = true // 독립 실행 가능한 애플리케이션으로 만듦
+}
+jar {
+    enabled = false // 일반 라이브러리 JAR 생성 비홞성화. 다른 모듈에서 의존성으로 사용 하지 않음 
 }
 
 test {

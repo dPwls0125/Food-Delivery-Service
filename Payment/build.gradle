@@ -15,6 +15,9 @@ dependencies {
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // web (RestClient)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
     // kafka
     implementation 'org.springframework.kafka:spring-kafka'
 
