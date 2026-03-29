@@ -1,18 +1,18 @@
 package personal.yejin;
 
+import personal.yejin.model.PaymentStatus;
+
 import java.time.LocalDateTime;
 
 
 public record PaymentResultEvent(
         String correlationId,
         Long paymentId,
-        LocalDateTime timestamp,
         Long orderId,
         Long userId,
+        PaymentStatus paymentStatus,
+        LocalDateTime timestamp,
         int amount,
-//        String paymentMethod,
-//        String pgResponseCode,
-//        String pgTransactionId,
         String failureReason
 ) {
 }

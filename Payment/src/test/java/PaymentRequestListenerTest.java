@@ -75,7 +75,7 @@ class PaymentRequestListenerTest {
         listener.consumePaymentRequest(request);
 
         verify(paymentRepository, times(1)).save(argThat(
-                payment -> payment.getStatus() == PaymentStatus.FAILED
+                payment -> payment.getStatus() == PaymentStatus.FAIL
         ));
         verify(kafkaTemplate).send(eq("payment-result"), argThat(
                 event -> ((PaymentResultEvent) event).failureReason() != null

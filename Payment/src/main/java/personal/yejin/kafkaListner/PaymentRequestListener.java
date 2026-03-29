@@ -50,15 +50,15 @@ public class PaymentRequestListener {
         Payment payment = savePaymentInPendingStatus(request);
 
         // 2. 결제 처리 (예외 발생해도 FAILED 이벤트 발행되도록 처리)
-        boolean paySuccess = false;
+        boolean isPaymentSuccess = false;
         String failureReason = null;
 
         PaymentMethod paymentMethod = request.paymentMethod();
 
         try {
-            paySuccess = callPaymentApi(request, paymentMethod);
-            if (!paySuccess) {
-                failureReason = "잔액 부족";
+            isPaymentSuccess = callPaymentApi(request, paymentMethod);
+            if (!isPaymentSuccess) {
+                failureReason = "잔액 부족"; // Todo : Mocking아니라 실제로 변경
             }
         } catch (Exception e) {
             log.error("결제 처리 중 예외 발생. correlationId={}", request.correlationId(), e);
@@ -66,33 +66,37 @@ public class PaymentRequestListener {
         }
 
         // 3. Payment 상태 업데이트
-        PaymentStatus status = paySuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
-        payment.setStatus(status);
+        PaymentStatus paymentStatus = isPaymentSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAIL;
+        payment.setStatus(paymentStatus);
         payment.setFailReason(failureReason);
 
         // 4. Status Server에 상태 업데이트
-        String finalFailureReason = failureReason;
-        CompletableFuture.runAsync(() -> {
-            statusServerClient.updatePaymentStatus(
-                    request.orderId(), request.correlationId(), status, finalFailureReason);
-        }, executorConfig.virtualThreadExecutor()).exceptionally(ex -> {
-            log.error("Status server 비동기 업데이트 중 오류 발생: orderId={}, correlationId={}", request.orderId(), request.correlationId(), ex);
-            return null;
-        });
+        sendPaymentStatusToStatusServerAsync(request.orderId(), request.correlationId(), failureReason, paymentStatus);
 
         // 5. 결과 이벤트 발행 (성공/실패 모두)
         PaymentResultEvent event = new PaymentResultEvent(
                 request.correlationId(),
                 payment.getId(),
-                LocalDateTime.now(),
                 request.orderId(),
                 request.userId(),
+                paymentStatus,
+                LocalDateTime.now(),
                 request.finalPrice(),
                 failureReason
         );
 
         kafkaTemplate.send(KAFKA_PAYMENT_RESULT_TOPIC, event);
         log.info("PYMENT_RESULT_TOPIC 밸행 : orderId={}, correlationId={}", request.orderId(), request.correlationId());
+    }
+
+    private void sendPaymentStatusToStatusServerAsync(long orderId, String correlationId, String failureReason, PaymentStatus status) {
+        CompletableFuture.runAsync(() -> {
+            statusServerClient.updatePaymentStatus(
+                    orderId, correlationId, status, failureReason);
+        }, executorConfig.virtualThreadExecutor()).exceptionally(ex -> {
+            log.error("Status server 비동기 업데이트 중 오류 발생: orderId={}, correlationId={}", orderId, correlationId, ex);
+            return null;
+        });
     }
 
     private boolean callPaymentApi(PaymentRequestEvent request, PaymentMethod paymentMethod) {
@@ -111,8 +115,6 @@ public class PaymentRequestListener {
                 .paymentMethod(request.paymentMethod())
                 .status(PaymentStatus.PENDING)
                 .build();
-
         return paymentRepository.save(payment);
     }
-
 }

@@ -31,7 +31,6 @@ public class PaymentService {
             publishPaymentRequestEvent(orderId, userId, correlationId, finalPrice, paymentMethod);
             log.info("결체 요청 이벤트 발행 완료 orderId={}, correlationId={}", orderId, correlationId);
             return new PaymentResponse(correlationId, PaymentStatus.PENDING);
-
         } catch (Exception e) {
             log.error("api-server to payment-request topic Kafka 전송 실패 또는 주문 검증 실패 : correlationId={}, orderId={}",
                     correlationId,
@@ -44,8 +43,8 @@ public class PaymentService {
         return "payment-" + UUID.randomUUID();
     }
 
-    private void publishPaymentRequestEvent(long orderId, long userId, String correlationId, int finalPrice,
-            PaymentMethod paymentMethod) throws Exception {
+    private void publishPaymentRequestEvent(long orderId, long userId, String correlationId,
+                                            int finalPrice, PaymentMethod paymentMethod) throws Exception {
         CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send("payment-request",
                 new PaymentRequestEvent(
                         orderId,
