@@ -1,14 +1,16 @@
 package personal.yejin.kafkaListner;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import personal.yejin.client.StatusServerClient;
 import personal.yejin.PaymentRequestEvent;
 import personal.yejin.PaymentResultEvent;
+import personal.yejin.client.StatusServerClient;
+import personal.yejin.config.ExecutorConfig;
 import personal.yejin.model.Payment;
 import personal.yejin.model.PaymentMethod;
 import personal.yejin.model.PaymentStatus;
@@ -20,6 +22,7 @@ import personal.yejin.service.PaymentAPI;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
@@ -30,15 +33,11 @@ public class PaymentRequestListener {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final PaymentRepository paymentRepository;
     private final StatusServerClient statusServerClient;
-    private final Map<PaymentMethod, PaymentAPI> paymentAPIMap;
+    private final ExecutorConfig executorConfig;
+    private final Map<PaymentMethod, PaymentAPI> paymentAPIMap = new HashMap<>();
 
-
-    public PaymentRequestListener(KafkaTemplate<String, Object> kafkaTemplate, PaymentRepository paymentRepository,
-                                   StatusServerClient statusServerClient) {
-        this.kafkaTemplate = kafkaTemplate;
-        this.paymentRepository = paymentRepository;
-        this.statusServerClient = statusServerClient;
-        this.paymentAPIMap = new HashMap<>();
+    @PostConstruct
+    private void init() {
         paymentAPIMap.put(PaymentMethod.CARD, new CardPaymentAPI());
         paymentAPIMap.put(PaymentMethod.CASH, new CashPaymentAPI());
     }
@@ -72,8 +71,14 @@ public class PaymentRequestListener {
         payment.setFailReason(failureReason);
 
         // 4. Status Server에 상태 업데이트
-        statusServerClient.updatePaymentStatus(
-                request.orderId(), request.correlationId(), status, failureReason);
+        String finalFailureReason = failureReason;
+        CompletableFuture.runAsync(() -> {
+            statusServerClient.updatePaymentStatus(
+                    request.orderId(), request.correlationId(), status, finalFailureReason);
+        }, executorConfig.virtualThreadExecutor()).exceptionally(ex -> {
+            log.error("Status server 비동기 업데이트 중 오류 발생: orderId={}, correlationId={}", request.orderId(), request.correlationId(), ex);
+            return null;
+        });
 
         // 5. 결과 이벤트 발행 (성공/실패 모두)
         PaymentResultEvent event = new PaymentResultEvent(
