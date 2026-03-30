@@ -31,12 +31,13 @@ public class OrderControllerTest {
     void testCreateOrder() throws Exception {
         // given
         OrderCreateRequest.OrderItemRequest orderItem = new OrderCreateRequest.OrderItemRequest(1L, 2);
-        OrderCreateRequest request = new OrderCreateRequest(101L, Collections.singletonList(orderItem), "서울시 강남구 테헤란로 123");
+        OrderCreateRequest request = new OrderCreateRequest(101L, Collections.singletonList(orderItem),
+                "서울시 강남구 테헤란로 123");
 
         // when & then
         mockMvc.perform(post("/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.orderId").exists())
                 .andExpect(jsonPath("$.orderId").isNumber())
