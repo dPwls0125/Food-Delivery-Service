@@ -20,6 +20,7 @@ public class DiscountService {
             discount += 1500; // TODO: 배민클럽 할인 정책 적용
         }
 
-        return discount;
+        int orderTotalAmount = order.getFoodPrice() + order.getDeliveryFee();
+        return Math.min(discount,orderTotalAmount);
     }
 }
