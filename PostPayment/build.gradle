@@ -16,12 +16,21 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    implementation 'org.springframework.boot:spring-boot-starter'
+
     // kafka
     implementation 'org.springframework.kafka:spring-kafka'
 
     // 공통 모듈
     implementation project(':common-event')
     implementation project(':common')
+}
+
+bootJar {
+    enabled = true
+}
+jar {
+    enabled = false
 }
 
 test {
