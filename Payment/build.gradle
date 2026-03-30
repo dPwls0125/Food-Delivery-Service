@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
 }
 
 group = 'personal.yejin'
@@ -24,9 +26,20 @@ dependencies {
     // jpa
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+    // DB
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    testRuntimeOnly 'com.h2database:h2'
+
     // 공통 모듈
     implementation project(':common-event')
     implementation project(':common')
+}
+
+bootJar {
+    enabled = true
+}
+jar {
+    enabled = false
 }
 
 test {
