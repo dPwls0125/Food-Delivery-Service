@@ -19,6 +19,7 @@ public class PaymentStatusService {
     private final PaymentStatusRepository paymentStatusRepository;
 
     public void updateStatus(Long orderId, PaymentStatusUpdateRequest request) {
+
         PaymentStatusEntity entity = PaymentStatusEntity.builder()
                 .orderId(orderId)
                 .status(request.status())

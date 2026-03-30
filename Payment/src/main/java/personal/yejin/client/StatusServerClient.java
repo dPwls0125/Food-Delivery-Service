@@ -2,9 +2,12 @@ package personal.yejin.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import personal.yejin.model.PaymentStatus;
+
+import java.time.Duration;
 
 @Slf4j
 @Component
@@ -13,7 +16,13 @@ public class StatusServerClient {
     private final RestClient restClient;
 
     public StatusServerClient(@Value("${status-server.url:http://localhost:8082}") String baseUrl) {
+
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofSeconds(5));
+        requestFactory.setReadTimeout(Duration.ofSeconds(5));
+
         this.restClient = RestClient.builder()
+                .requestFactory(requestFactory)
                 .baseUrl(baseUrl)
                 .build();
     }
@@ -43,5 +52,6 @@ public class StatusServerClient {
             String correlationId,
             PaymentStatus status,
             String failureReason
-    ) {}
+    ) {
+    }
 }
