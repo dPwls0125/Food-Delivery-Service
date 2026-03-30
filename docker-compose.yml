@@ -9,6 +9,11 @@ services:
       MYSQL_DATABASE: delivery
       MYSQL_USER: ${MYSQL_USERNAME}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     ports:
       - "127.0.0.1:3306:3306"
     volumes:
@@ -24,6 +29,11 @@ services:
       MYSQL_DATABASE: payment
       MYSQL_USER: ${MYSQL_USERNAME}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     ports:
       - "127.0.0.1:3307:3306"
     volumes:
@@ -74,9 +84,12 @@ services:
     ports:
       - "8080:8080" # 외부에 노출되는 제일 중요한 서버포트
     depends_on:
-      - mysql
-      - redis
-      - kafka
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=local
       - MYSQL_USERNAME=${MYSQL_USERNAME}
@@ -92,9 +105,12 @@ services:
     # ports:
     #   - "8081:8080" # api-server를 통해서만 접근하도록 외부 노출 포트를 닫음.
     depends_on:
-      - mysql-payment
-      - redis
-      - kafka
+      mysql-payment:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=local
       - MYSQL_USERNAME=${MYSQL_USERNAME}
@@ -110,9 +126,12 @@ services:
     # ports:
     #   - "8082:8080" # api-server를 통해서만 접근하도록 외부 노출 포트를 닫음.
     depends_on:
-      - mysql
-      - redis
-      - kafka
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=local
       - MYSQL_USERNAME=${MYSQL_USERNAME}
@@ -128,9 +147,12 @@ services:
     # ports:
     #   - "8083:8080" # api-server를 통해서만 접근하도록 외부 노출 포트를 닫음.
     depends_on:
-      - mysql
-      - redis
-      - kafka
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=local
       - MYSQL_USERNAME=${MYSQL_USERNAME}
