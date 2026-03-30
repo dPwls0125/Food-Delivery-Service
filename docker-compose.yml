@@ -46,6 +46,77 @@ services:
     volumes:
       - redis-data:/data
 
+  # ==========================================
+  # 어플리케이션 백엔드 서버 모듈들
+  # ==========================================
+  api-server:
+    build:
+      context: .
+      args:
+        MODULE_NAME: api-server
+    container_name: api-server-delivery
+    ports:
+      - "8080:8080" # 외부에 노출되는 제일 중요한 서버포트
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  payment-server:
+    build:
+      context: .
+      args:
+        MODULE_NAME: Payment
+    container_name: payment-delivery
+    # ports:
+    #   - "8081:8080" # api-server를 통해서만 접근하도록 외부 노출 포트를 닫음.
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  postpayment-server:
+    build:
+      context: .
+      args:
+        MODULE_NAME: PostPayment
+    container_name: postpayment-delivery
+    # ports:
+    #   - "8082:8080" # api-server를 통해서만 접근하도록 외부 노출 포트를 닫음.
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  status-server:
+    build:
+      context: .
+      args:
+        MODULE_NAME: status-server
+    container_name: status-delivery
+    # ports:
+    #   - "8083:8080" # api-server를 통해서만 접근하도록 외부 노출 포트를 닫음.
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
 volumes:
   mysql-data:
   redis-data:
