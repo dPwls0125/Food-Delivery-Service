@@ -1,9 +1,13 @@
 spring:
   config:
     import: optional:file:.env[.properties]
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: payment-process-group
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://mysql-payment:3306/payment?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://${PAYMENT_DB_HOST:mysql-payment}:${PAYMENT_DB_PORT:3306}/payment?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
 
