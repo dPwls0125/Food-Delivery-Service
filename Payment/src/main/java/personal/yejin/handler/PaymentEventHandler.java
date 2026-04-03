@@ -43,9 +43,15 @@ public class PaymentEventHandler {
                 event.failureReason()
         );
 
-        kafkaTemplate.send(KAFKA_PAYMENT_RESULT_TOPIC, resultEvent);
-        log.info("PAYMENT_RESULT_TOPIC 발행: orderId={}, correlationId={}",
-                event.orderId(), event.correlationId());
+
+        try {
+            kafkaTemplate.send(KAFKA_PAYMENT_RESULT_TOPIC, resultEvent);
+            log.info("PAYMENT_RESULT_TOPIC 발행: orderId={}, correlationId={}",
+                    event.orderId(), event.correlationId());
+        } catch (Exception e) {
+            log.error("Kafka PAYMENT_RESULT_TOPIC 발행 중 오류 발생 : orderId={}, correlationId={}",
+                    event.orderId(), event.correlationId(), e);
+        }
 
         // 2. Status Server에 상태 업데이트
         try {
@@ -53,8 +59,6 @@ public class PaymentEventHandler {
                     event.orderId(), event.correlationId(),
                     event.paymentStatus(), event.failureReason());
         } catch (Exception e) {
-            log.error("Status server 업데이트 중 오류 발생: orderId={}, correlationId={}",
-                    event.orderId(), event.correlationId(), e);
         }
     }
 }
