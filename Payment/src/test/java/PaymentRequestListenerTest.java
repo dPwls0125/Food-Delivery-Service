@@ -2,12 +2,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.context.ApplicationEventPublisher;
 import personal.yejin.PaymentRequestEvent;
-import personal.yejin.PaymentResultEvent;
+import personal.yejin.handler.PaymentCompletedInternalEvent;
 import personal.yejin.kafkaListner.PaymentRequestListener;
 import personal.yejin.model.Payment;
 import personal.yejin.model.PaymentMethod;
@@ -15,8 +16,10 @@ import personal.yejin.model.PaymentStatus;
 import personal.yejin.repository.PaymentRepository;
 import personal.yejin.service.PaymentAPI;
 
+import java.util.List;
 import java.util.Map;
-
+ 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -24,17 +27,13 @@ import static org.mockito.Mockito.*;
 class PaymentRequestListenerTest {
 
     @Mock
-    Map<PaymentMethod, PaymentAPI> paymentAPIMap;
-
+    PaymentRepository paymentRepository;
+ 
     @Mock
-    KafkaTemplate<String, Object> kafkaTemplate;
-
-    @Mock
-    PaymentRepository paymentRepository; // TODO : 가짜객체이므로 JPA가 동작하지 않는다. 따라서 통합테스트로 변경하여 실제로 상태가 SUCCESS로 바뀌어서 DB에 반영됐는지"를 검증
-
-    @InjectMocks
+    ApplicationEventPublisher eventPublisher;
+ 
     PaymentRequestListener listener;
-
+ 
     @Mock
     PaymentAPI paymentAPI;
 
@@ -44,55 +43,64 @@ class PaymentRequestListenerTest {
 
     @BeforeEach
     void setUp() {
+        when(paymentAPI.getSupportedMethod()).thenReturn(PaymentMethod.CARD);
+        listener = new PaymentRequestListener(paymentRepository, eventPublisher, List.of(paymentAPI));
+
         when(paymentRepository.save(any(Payment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(paymentAPIMap.get(any(PaymentMethod.class))).thenReturn(paymentAPI);
     }
 
-
-    // TODO : 후에 status update에 대한 로직도 추가해야함.
     @Test
-    @DisplayName("결제 성공시, payment를 DB에 SUCCESS로 저장하고, 성공 이벤트를 발행한다.")
-    void 결제_성공시_SUCCESS로_저장되고_이벤트_발행() {
+    @DisplayName("결제 성공시, Payment를 PENDING으로 저장하고, SUCCESS 상태의 내부 이벤트를 발행한다.")
+    void 결제_성공시_SUCCESS_이벤트_발행() {
         when(paymentAPI.pay(10000, PaymentMethod.CARD)).thenReturn(true);
 
         listener.consumePaymentRequest(request);
 
-        verify(paymentRepository, times(1)).save(argThat(
-                payment -> payment.getStatus() == PaymentStatus.SUCCESS
-        ));
+        // Payment가 PENDING 상태로 save 호출됨 (dirty checking으로 이후 SUCCESS로 변경)
+        verify(paymentRepository, times(1)).save(any(Payment.class));
 
-        verify(kafkaTemplate).send(eq("payment-result"), argThat(
-                event -> ((PaymentResultEvent) event).failureReason() == null
-        ));
+        // Spring 내부 이벤트가 SUCCESS 상태로 발행됨
+        ArgumentCaptor<PaymentCompletedInternalEvent> captor =
+                ArgumentCaptor.forClass(PaymentCompletedInternalEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+
+        PaymentCompletedInternalEvent event = captor.getValue();
+        assertThat(event.paymentStatus()).isEqualTo(PaymentStatus.SUCCESS);
+        assertThat(event.failureReason()).isNull();
+        assertThat(event.orderId()).isEqualTo(1L);
     }
 
     @Test
-    @DisplayName("결제 API 처리 실패시, payment를 DB에 FAILED로 저장하고, 실패 이벤트를 발행한다.")
-    void 결제_실패시_FAILED로_저장되고_실패사유_담김() {
+    @DisplayName("결제 API 처리 실패시, FAIL 상태의 내부 이벤트를 발행한다.")
+    void 결제_실패시_FAIL_이벤트_발행() {
         when(paymentAPI.pay(10000, PaymentMethod.CARD)).thenReturn(false);
 
         listener.consumePaymentRequest(request);
 
-        verify(paymentRepository, times(1)).save(argThat(
-                payment -> payment.getStatus() == PaymentStatus.FAIL
-        ));
-        verify(kafkaTemplate).send(eq("payment-result"), argThat(
-                event -> ((PaymentResultEvent) event).failureReason() != null
-        ));
+        ArgumentCaptor<PaymentCompletedInternalEvent> captor =
+                ArgumentCaptor.forClass(PaymentCompletedInternalEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+
+        PaymentCompletedInternalEvent event = captor.getValue();
+        assertThat(event.paymentStatus()).isEqualTo(PaymentStatus.FAIL);
+        assertThat(event.failureReason()).isNotNull();
     }
 
     @Test
-    @DisplayName("결제 API 처리중 예외 발생시, payment를 DB에 FAILED로 저장하고, 실패 이벤트를 발행한다.")
-    void 예외_발생해도_FAILED_이벤트_발행() {
+    @DisplayName("결제 API 처리중 예외 발생시, FAIL 상태의 내부 이벤트를 발행한다.")
+    void 예외_발생해도_FAIL_이벤트_발행() {
         when(paymentAPI.pay(10000, PaymentMethod.CARD))
                 .thenThrow(new RuntimeException("PG사 타임아웃"));
 
         listener.consumePaymentRequest(request);
 
-        verify(kafkaTemplate).send(eq("payment-result"), argThat(
-                event -> ((PaymentResultEvent) event).failureReason()
-                        .contains("PG사 타임아웃")
-        ));
+        ArgumentCaptor<PaymentCompletedInternalEvent> captor =
+                ArgumentCaptor.forClass(PaymentCompletedInternalEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+
+        PaymentCompletedInternalEvent event = captor.getValue();
+        assertThat(event.paymentStatus()).isEqualTo(PaymentStatus.FAIL);
+        assertThat(event.failureReason()).contains("PG사 타임아웃");
     }
 }
