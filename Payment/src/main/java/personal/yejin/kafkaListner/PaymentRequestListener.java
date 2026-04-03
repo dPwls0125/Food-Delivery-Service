@@ -1,16 +1,12 @@
 package personal.yejin.kafkaListner;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import personal.yejin.PaymentRequestEvent;
-import personal.yejin.PaymentResultEvent;
-import personal.yejin.client.StatusServerClient;
-import personal.yejin.config.ExecutorConfig;
+import personal.yejin.handler.PaymentCompletedInternalEvent;
 import personal.yejin.model.Payment;
 import personal.yejin.model.PaymentMethod;
 import personal.yejin.model.PaymentStatus;
@@ -20,26 +16,26 @@ import personal.yejin.service.CashPaymentAPI;
 import personal.yejin.service.PaymentAPI;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class PaymentRequestListener {
-
-    private static final String KAFKA_PAYMENT_RESULT_TOPIC = "payment-result";
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+ 
     private final PaymentRepository paymentRepository;
-    private final StatusServerClient statusServerClient;
-    private final ExecutorConfig executorConfig;
-    private final Map<PaymentMethod, PaymentAPI> paymentAPIMap = new HashMap<>();
+    private final ApplicationEventPublisher eventPublisher;
+    private final Map<PaymentMethod, PaymentAPI> paymentAPIMap;
 
-    @PostConstruct
-    private void init() {
-        paymentAPIMap.put(PaymentMethod.CARD, new CardPaymentAPI());
-        paymentAPIMap.put(PaymentMethod.CASH, new CashPaymentAPI());
+    public PaymentRequestListener(PaymentRepository paymentRepository,
+                                  ApplicationEventPublisher eventPublisher,
+                                  List<PaymentAPI> paymentAPIs) {
+        this.paymentRepository = paymentRepository;
+        this.eventPublisher = eventPublisher;
+        this.paymentAPIMap = paymentAPIs.stream()
+                .collect(Collectors.toMap(PaymentAPI::getSupportedMethod, Function.identity()));
     }
 
     @Transactional
@@ -65,16 +61,13 @@ public class PaymentRequestListener {
             failureReason = "결제 처리 중 오류: " + e.getMessage();
         }
 
-        // 3. Payment 상태 업데이트
+        // 3. Payment 상태 업데이트 (dirty checking으로 커밋 시 DB 반영)
         PaymentStatus paymentStatus = isPaymentSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAIL;
         payment.setStatus(paymentStatus);
         payment.setFailReason(failureReason);
 
-        // 4. Status Server에 상태 업데이트
-        sendPaymentStatusToStatusServerAsync(request.orderId(), request.correlationId(), failureReason, paymentStatus);
-
-        // 5. 결과 이벤트 발행 (성공/실패 모두)
-        PaymentResultEvent event = new PaymentResultEvent(
+        // 4. Spring 내부 이벤트 발행 → 트랜잭션 커밋 후 PaymentEventHandler가 수신
+        eventPublisher.publishEvent(new PaymentCompletedInternalEvent(
                 request.correlationId(),
                 payment.getId(),
                 request.orderId(),
@@ -83,20 +76,10 @@ public class PaymentRequestListener {
                 LocalDateTime.now(),
                 request.finalPrice(),
                 failureReason
-        );
+        ));
 
-        kafkaTemplate.send(KAFKA_PAYMENT_RESULT_TOPIC, event);
-        log.info("PYMENT_RESULT_TOPIC 밸행 : orderId={}, correlationId={}", request.orderId(), request.correlationId());
-    }
-
-    private void sendPaymentStatusToStatusServerAsync(long orderId, String correlationId, String failureReason, PaymentStatus status) {
-        CompletableFuture.runAsync(() -> {
-            statusServerClient.updatePaymentStatus(
-                    orderId, correlationId, status, failureReason);
-        }, executorConfig.virtualThreadExecutor()).exceptionally(ex -> {
-            log.error("Status server 비동기 업데이트 중 오류 발생: orderId={}, correlationId={}", orderId, correlationId, ex);
-            return null;
-        });
+        log.info("결제 처리 완료, 내부 이벤트 발행: orderId={}, correlationId={}, status={}",
+                request.orderId(), request.correlationId(), paymentStatus);
     }
 
     private boolean callPaymentApi(PaymentRequestEvent request, PaymentMethod paymentMethod) {
