@@ -24,7 +24,7 @@ public class NotifyService {
         });
 
         emitter.onTimeout(() -> {
-            log.info("SSE emitter 완료됨. storeId={}", storeId);
+            log.info("SSE emitter 타임아웃됨. storeId={}", storeId);
             emitters.remove(storeId);
         });
 
