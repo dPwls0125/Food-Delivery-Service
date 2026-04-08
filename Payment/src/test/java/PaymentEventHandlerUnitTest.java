@@ -34,7 +34,7 @@ class PaymentEventHandlerUnitTest {
     @DisplayName("결제 완료 이벤트를 받으면 Kafka 결과 이벤트를 발행하고, Status Server에 상태를 업데이트한다.")
     void 성공_이벤트_처리시_Kafka_발행_및_StatusServer_업데이트() {
         PaymentCompletedInternalEvent event = new PaymentCompletedInternalEvent(
-                "corr-1", 100L, 5001L, 1L,
+                "corr-1", 100L, 5001L, 1L, 101L,
                 PaymentStatus.SUCCESS, LocalDateTime.now(), 18000, null
         );
 
@@ -58,7 +58,7 @@ class PaymentEventHandlerUnitTest {
     @DisplayName("실패 이벤트 처리시 실패 사유가 포함된 Kafka 이벤트를 발행한다.")
     void 실패_이벤트_처리시_실패사유_포함() {
         PaymentCompletedInternalEvent event = new PaymentCompletedInternalEvent(
-                "corr-2", 101L, 5002L, 2L,
+                "corr-2", 101L, 5002L, 2L, 102L,
                 PaymentStatus.FAIL, LocalDateTime.now(), 10000, "잔액 부족"
         );
 
@@ -79,7 +79,7 @@ class PaymentEventHandlerUnitTest {
     @DisplayName("Status Server 업데이트 실패해도 예외가 전파되지 않는다.")
     void StatusServer_실패해도_예외_전파_안됨() {
         PaymentCompletedInternalEvent event = new PaymentCompletedInternalEvent(
-                "corr-3", 102L, 5003L, 3L,
+                "corr-3", 102L, 5003L, 3L, 103L,
                 PaymentStatus.SUCCESS, LocalDateTime.now(), 15000, null
         );
 

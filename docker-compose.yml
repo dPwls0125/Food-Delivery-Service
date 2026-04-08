@@ -76,8 +76,6 @@ services:
         condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILE:-local}
-      - MYSQL_USERNAME=${MYSQL_USERNAME}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - REDIS_HOST=${REDIS_HOST}
 
   zookeeper:

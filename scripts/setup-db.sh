@@ -30,7 +30,6 @@ else
     cd "$HOME" && git clone -b develop https://github.com/dPwls0125/Food-Delivery-Service.git
     cd "$REPO_DIR"
 fi
-fi
 
 # 4. .env 생성
 if [ ! -f "$REPO_DIR/.env" ]; then
