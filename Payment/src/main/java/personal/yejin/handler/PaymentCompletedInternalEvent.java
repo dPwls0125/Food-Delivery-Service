@@ -12,9 +12,10 @@ public record PaymentCompletedInternalEvent(
         Long paymentId,
         Long orderId,
         Long userId,
+        Long storeId,
         PaymentStatus paymentStatus,
         LocalDateTime timestamp,
-        int finalPrice,
+        int amount,
         String failureReason
 ) {
 }

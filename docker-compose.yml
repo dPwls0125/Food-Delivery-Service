@@ -13,14 +13,6 @@ services:
       - postpayment-server
       - status-server
 
-  redis:
-    image: redis:7
-    container_name: redis-delivery
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-
   # ==========================================
   # 어플리케이션 백엔드 서버 모듈들
   # ==========================================
