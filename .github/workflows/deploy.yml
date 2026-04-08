@@ -17,7 +17,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/Food-Delivery-Service
-            git pull
+            git fetch origin
+            git checkout develop
+            git pull origin develop
 
             # 최신 소스로 컨테이너 다시 빌드 및 재시작 (DB는 DB서버에 있으므로 영향 없음)
             docker-compose up -d --build
