@@ -25,10 +25,11 @@ fi
 REPO_DIR="$HOME/Food-Delivery-Service"
 if ! command -v git &> /dev/null; then sudo apt-get install -y git; fi
 if [ -d "$REPO_DIR" ]; then
-    cd "$REPO_DIR" && git pull origin feat/infra
+    cd "$REPO_DIR" && git pull origin develop
 else
-    cd "$HOME" && git clone -b feat/infra https://github.com/dPwls0125/Food-Delivery-Service.git
+    cd "$HOME" && git clone -b develop https://github.com/dPwls0125/Food-Delivery-Service.git
     cd "$REPO_DIR"
+fi
 fi
 
 # 4. .env 생성
