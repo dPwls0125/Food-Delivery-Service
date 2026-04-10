@@ -1,0 +1,8 @@
+# ==========================================
+# status-server 운영 환경 설정 (prod profile)
+# ==========================================
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}

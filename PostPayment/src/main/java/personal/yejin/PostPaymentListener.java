@@ -13,9 +13,9 @@ public class PostPaymentListener
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    // 결제 후처리.
-    @KafkaListener(topics = "payment-result", groupId = "payment-result-group")
-    public void consumePaymentResult(PaymentResultEvent event) {
+    // 결제 후
+    @KafkaListener(topics = "payment-result", groupId = "notify-to-store")
+    public void consumePaymentResultAndNotifyToStore(PaymentResultEvent event) {
 
 
 

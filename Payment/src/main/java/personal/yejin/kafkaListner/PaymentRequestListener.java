@@ -72,9 +72,10 @@ public class PaymentRequestListener {
                 payment.getId(),
                 request.orderId(),
                 request.userId(),
+                1L, // storeId
                 paymentStatus,
                 LocalDateTime.now(),
-                request.finalPrice(),
+                request.finalPrice(), // amount
                 failureReason
         ));
 

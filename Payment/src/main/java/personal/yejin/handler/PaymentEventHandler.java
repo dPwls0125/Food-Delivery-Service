@@ -37,9 +37,10 @@ public class PaymentEventHandler {
                 event.paymentId(),
                 event.orderId(),
                 event.userId(),
+                event.storeId(),
                 event.paymentStatus(),
                 event.timestamp(),
-                event.finalPrice(),
+                event.amount(),
                 event.failureReason()
         );
 

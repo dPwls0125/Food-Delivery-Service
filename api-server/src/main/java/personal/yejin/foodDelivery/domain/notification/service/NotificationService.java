@@ -12,12 +12,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class NotificationService {
 
-    // 실서버에서는 Redis Pub/Sub을 활용하여 분산 환경 SSE를 구현해야 하나, 우선 로컬 Map으로 구성합니다.
+    // TODO : 실서버에서는 Redis Pub/Sub을 활용하여 분산 환경 SSE를 구현해야 하나, 우선 로컬 Map으로 구성합니다.
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 30; // 30분 동안 SSE 연결 유지
 
     /**
-     * 클라이언트가 SSE 구독을 요청할 때 Emitter를 생성하여 반환합니다.
+     * 클라이언트가 SSE 구독을 요청할 때 Emitter를 생성하여 반환.
      */
     public SseEmitter subscribe(Long userId) {
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
@@ -32,6 +32,7 @@ public class NotificationService {
             emitter.complete();
             emitters.remove(userId);
         });
+
         emitter.onError((e) -> {
             log.error("SSE emitter 에러. userId={}", userId, e);
             emitter.completeWithError(e);

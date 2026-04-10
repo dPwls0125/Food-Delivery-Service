@@ -1,76 +1,17 @@
 version: '3.8'
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql-delivery
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: delivery
-      MYSQL_USER: ${MYSQL_USERNAME}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  nginx:
+    image: nginx:latest
+    container_name: nginx-delivery
     ports:
-      - "127.0.0.1:3306:3306"
+      - "80:80"
     volumes:
-      - mysql-data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  mysql-payment:
-    image: mysql:8.0
-    container_name: mysql-payment-delivery
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: payment
-      MYSQL_USER: ${MYSQL_USERNAME}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "127.0.0.1:3307:3306"
-    volumes:
-      - mysql-payment-data:/var/lib/mysql
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: zookeeper-delivery
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka-delivery
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
-  redis:
-    image: redis:7
-    container_name: redis-delivery
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
+      - api-server
+      - payment-server
+      - postpayment-server
+      - status-server
 
   # ==========================================
   # 어플리케이션 백엔드 서버 모듈들
@@ -81,19 +22,15 @@ services:
       args:
         MODULE_NAME: api-server
     container_name: api-server-delivery
-    ports:
-      - "8080:8080" # 외부에 노출되는 제일 중요한 서버포트
     depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
       kafka:
         condition: service_started
     environment:
-      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILE:-local} #local .env에는 해당 설정이 없으므로 local 적용
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT:-3306}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
 
   payment-server:
@@ -102,19 +39,15 @@ services:
       args:
         MODULE_NAME: Payment
     container_name: payment-delivery
-    # ports:
-    #   - "8081:8080" # api-server를 통해서만 접근하도록 외부 노출 포트를 닫음.
     depends_on:
-      mysql-payment:
-        condition: service_healthy
-      redis:
-        condition: service_started
       kafka:
         condition: service_started
     environment:
-      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILE:-local}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - PAYMENT_DB_HOST=${PAYMENT_DB_HOST}
+      - PAYMENT_DB_PORT=${PAYMENT_DB_PORT:-3306}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
 
   postpayment-server:
@@ -123,17 +56,11 @@ services:
       args:
         MODULE_NAME: PostPayment
     container_name: postpayment-delivery
-    # ports:
-    #   - "8082:8080" # api-server를 통해서만 접근하도록 외부 노출 포트를 닫음.
     depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
       kafka:
         condition: service_started
     environment:
-      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILE:-local}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
@@ -144,21 +71,30 @@ services:
       args:
         MODULE_NAME: status-server
     container_name: status-delivery
-    # ports:
-    #   - "8083:8080" # api-server를 통해서만 접근하도록 외부 노출 포트를 닫음.
     depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
       kafka:
         condition: service_started
     environment:
-      - SPRING_PROFILES_ACTIVE=local
-      - MYSQL_USERNAME=${MYSQL_USERNAME}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILE:-local}
+      - REDIS_HOST=${REDIS_HOST}
 
-volumes:
-  mysql-data:
-  mysql-payment-data:
-  redis-data:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper-delivery
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-delivery
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

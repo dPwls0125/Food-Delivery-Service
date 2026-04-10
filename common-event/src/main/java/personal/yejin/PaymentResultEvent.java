@@ -10,6 +10,7 @@ public record PaymentResultEvent(
         Long paymentId,
         Long orderId,
         Long userId,
+        Long storeId,
         PaymentStatus paymentStatus,
         LocalDateTime timestamp,
         int amount,
